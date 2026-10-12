@@ -2,7 +2,6 @@ import Link from "next/link";
 import {
   ArrowRight,
   ArrowUpRight,
-  MapPin,
   Cog,
   Palette,
   HeartPulse,
@@ -35,29 +34,26 @@ export default async function Home() {
   const colleges = s ? await institutions({}, 3) : { rows: [] };
   return (
     <>
-      <section className="hero">
-        <HeroMedia />
-        <div className="hero-shade" />
-        <div className="container hero-content">
-          <p className="hero-eyebrow">
-            <span /> BIG POSSIBILITIES. YOUR NEXT CHAPTER.
+      <section className="campus-hero" aria-labelledby="hero-title">
+        <div className="campus-hero-copy">
+          <p className="campus-hero-eyebrow">
+            <span /> YOUR NEXT CHAPTER
           </p>
-          <h1>
-            Your future starts
+          <h1 id="hero-title">
+            Big dreams.
             <br />
-            with the <em>right college.</em>
+            <em>Your move.</em>
           </h1>
-          <p className="hero-description">
-            Explore your options. Meet the people. Find a campus
-            <br className="desktop-only" /> where you can become who you want to
-            be.
+          <p className="campus-hero-description">
+            Find your people. Discover your campus. Make room for who you could
+            become.
           </p>
-          <Link className="hero-link" href="/counselling">
-            Let’s find your way forward <ArrowUpRight size={19} />
+          <Link className="campus-hero-link" href="/colleges">
+            Find your college <ArrowUpRight size={20} />
           </Link>
         </div>
-        <div className="hero-caption">
-          <MapPin size={13} /> A new perspective starts here.
+        <div className="campus-hero-film">
+          <HeroMedia />
         </div>
       </section>
       <section

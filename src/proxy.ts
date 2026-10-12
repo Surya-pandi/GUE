@@ -4,6 +4,9 @@ import { configured, supabasePublicKey } from "@/lib/config";
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });
   const pathname = request.nextUrl.pathname;
+  // Installation assets must work without a session or an Auth round trip.
+  if (["/manifest.webmanifest", "/sw.js", "/offline.html"].includes(pathname))
+    return response;
   // The email worker authenticates its scheduler using CRON_SECRET in its handler.
   if (pathname === "/api/cron/email") return response;
   const publicPage = [

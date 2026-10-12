@@ -15,6 +15,12 @@ const pages = [
   "/images/mobile-poster.webp",
   "/images/global-university-expo.png",
   "/images/gue-logo.png",
+  "/images/app-icon-192.png",
+  "/images/app-icon-512.png",
+  "/images/app-icon-maskable.png",
+  "/images/apple-touch-icon.png",
+  "/manifest.webmanifest",
+  "/sw.js",
 ];
 for (const path of pages) {
   const response = await fetch(base + path, { redirect: "manual" });
@@ -29,7 +35,7 @@ for (const path of pages) {
       `Logo: ${path}`,
     );
     if (path === "/") {
-      assert.ok(html.includes("Your future starts"), "Public landing hero");
+      assert.ok(html.includes("Big dreams."), "Public landing hero");
       assert.ok(html.includes('id="how-it-works"'), "Public landing sections");
       assert.ok(
         html.includes("Log in to explore universities"),
@@ -43,6 +49,15 @@ for (const path of pages) {
   }
   console.log(`PASS ${path}`);
 }
+const manifest = await (await fetch(base + "/manifest.webmanifest")).json();
+assert.equal(manifest.display, "standalone");
+assert.equal(manifest.start_url, "/");
+const worker = await fetch(base + "/sw.js");
+assert.match(worker.headers.get("content-type") || "", /javascript/);
+assert.match(worker.headers.get("cache-control") || "", /no-store/);
+const offline = await fetch(base + "/offline.html", { redirect: "manual" });
+assert.equal(offline.status, 200, "Offline screen works without login");
+assert.ok((await offline.text()).includes("You're offline."));
 for (const path of [
   "/colleges",
   "/colleges?stream=Engineering&city=Chennai",

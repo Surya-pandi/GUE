@@ -66,7 +66,15 @@ Optional: to enable booking/reminder emails, add server-only `RESEND_API_KEY`, `
 
 Database notifications and outbox insertion share the business transaction. `/api/cron/email` requires `Authorization: Bearer <CRON_SECRET>`, queues deduplicated reminders for confirmed bookings in the next 24 hours, and claims at most 20 queued emails with `FOR UPDATE SKIP LOCKED`. Delivery uses idempotency keys and retry backoff, stopping after eight attempts. Monitor failed/exhausted rows in `email_outbox` and reconcile failures before replaying. Provider idempotency is bounded to 24 hours; no exactly-once delivery guarantee is claimed.
 
-`vercel.json` schedules the worker every ten minutes. This schedule requires a Vercel plan that supports sub-daily cron. For a Hobby deployment, remove that cron configuration and supply an appropriately secured external scheduler, or choose a compatible plan; daily delivery is unsuitable for timely booking messages. See [Vercel cron management](https://vercel.com/docs/cron-jobs/manage-cron-jobs) and [Resend idempotency](https://resend.com/docs/dashboard/emails/idempotency-keys).
+`vercel.json` has no scheduled jobs; application email delivery is disabled for the basic deployment. Configure the provider and a secured scheduler when email is needed. See [Vercel cron management](https://vercel.com/docs/cron-jobs/manage-cron-jobs) and [Resend idempotency](https://resend.com/docs/dashboard/emails/idempotency-keys).
+
+## Installable app (PWA)
+
+The app includes a web manifest, standalone display mode, home-screen icons, and a service worker. Deploy over HTTPS (localhost also works for development). Use **Install app** in the header: supported browsers offer an install prompt; other browsers show installation instructions. On iPhone/iPad, open the site in Safari and use Share → Add to Home Screen. The install option is hidden when running as a standalone app.
+
+Only `/offline.html` is cached. Offline navigation shows a reconnect screen; account pages, college records, bookings, API responses, and videos are not cached. Authentication and bookings require a connection. `/manifest.webmanifest`, `/sw.js`, and `/offline.html` are publicly accessible without authentication. The worker uses network-only navigation with an offline fallback, so deployments do not serve stale account pages. Bump the `gue-offline-v1` cache version in `public/sw.js` when updating the offline document.
+
+The homepage overlays compact editorial text on the campus film, with a subtle gradient behind the copy. On mobile, the copy sits near the bottom to keep the upper footage clear. The video autoplays without a visible playback button and respects reduced-motion preferences.
 
 ## Media and brand configuration
 
@@ -74,10 +82,10 @@ Database notifications and outbox insertion share the business transaction. `/ap
 - `NEXT_PUBLIC_BRAND_LOGO`: defaults to `/images/global-university-expo.png`, the supplied full-name logo used in the responsive header and footer. The original artwork is preserved; CSS clips its outer padding. `/images/gue-logo.png` is the supplied compact mark used as the site icon. Both files are in `public/images/`.
 - `NEXT_PUBLIC_SITE_URL`: absolute canonical URL; also used for Auth callbacks and upload origin checks. Restart/rebuild after changing public environment variables.
 - `NEXT_PUBLIC_CONTACT_EMAIL`: optional real operator contact.
-- `NEXT_PUBLIC_HERO_VIDEO`: enabled by default; set to `false` to use static posters. The supplied `/public/videos/desktop-intro.mp4` plays above 640px and `/public/videos/mobile-intro.mp4` plays at 640px and below. Only the selected video loads, and the source updates when the viewport changes. Videos autoplay muted, inline, and looping; reduced-motion preferences and playback errors use the responsive poster images.
+- `NEXT_PUBLIC_HERO_VIDEO`: enabled by default; set to `false` to use the plain hero background. The supplied `/public/videos/desktop-intro.mp4` plays above 640px and `/public/videos/mobile-intro.mp4` plays at 640px and below. Only the selected video loads, and the source updates when the viewport changes. Videos autoplay muted, inline, and looping. No placeholder image is shown while loading; disabled video, reduced-motion preferences, and playback errors leave the plain background behind the text.
 - Supplied campus photography is illustrative. Credits are in `public/images/CREDITS.md`. Replace it with approved institution/company assets if preferred.
 
-The two poster assets are `/public/images/desktop-poster.webp` and `/public/images/mobile-poster.webp`. The background videos were supplied as `desktop background video.mp4` and `mobile background video.mp4` and copied unchanged into `public/videos/`. Institution photos are separate database-backed assets; generic photos are never used as institution evidence.
+The previous poster assets remain in `public/images/` but are no longer displayed in the hero. The background videos were supplied as `desktop background video.mp4` and `mobile background video.mp4` and copied unchanged into `public/videos/`. Institution photos are separate database-backed assets; generic photos are never used as institution evidence.
 
 ## Verify
 

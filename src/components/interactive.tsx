@@ -112,40 +112,19 @@ export function HeroMedia() {
       reducedMotion.removeEventListener("change", updateSource);
     };
   }, []);
+  if (!source) return null;
   return (
-    <>
-      {/* Licensed Unsplash photograph; illustrative campus image, not an institution listing. */}
-      <picture>
-        <source
-          media="(max-width: 640px)"
-          srcSet="/images/mobile-poster.webp"
-        />
-        <img
-          className="hero-photo"
-          src="/images/desktop-poster.webp"
-          alt="Tree-lined university grounds with historic campus buildings"
-          fetchPriority="high"
-        />
-      </picture>
-      {source && (
-        <video
-          key={source}
-          className="hero-photo"
-          src={source}
-          autoPlay
-          muted
-          playsInline
-          loop
-          aria-hidden="true"
-          poster={
-            source.includes("mobile")
-              ? "/images/mobile-poster.webp"
-              : "/images/desktop-poster.webp"
-          }
-          onError={() => setSource("")}
-        />
-      )}
-    </>
+    <video
+      key={source}
+      className="hero-photo"
+      src={source}
+      autoPlay
+      muted
+      playsInline
+      loop
+      aria-hidden="true"
+      onError={() => setSource("")}
+    />
   );
 }
 export function Gallery({

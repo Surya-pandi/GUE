@@ -3,6 +3,7 @@ import { ArrowRight, Search, Compass, Building2 } from "lucide-react";
 import { config } from "@/lib/config";
 import { session } from "@/lib/auth";
 import { logoutAction } from "@/app/actions";
+import { PwaInstall } from "@/components/pwa-install";
 export function Brand() {
   return (
     <Link href="/" className="brand" aria-label={`${config.name} home`}>
@@ -34,6 +35,7 @@ export async function Header() {
           <Link href="/for-institutions">For institutions</Link>
         </nav>
         <div className="header-actions">
+          <PwaInstall />
           {s ? (
             <>
               <Link className="login-link" href="/dashboard">
