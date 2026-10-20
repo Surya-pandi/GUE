@@ -26,7 +26,7 @@ import { requireUser } from "@/lib/auth";
 import { PageTitle, Empty, Field, Select, Textarea } from "@/components/ui";
 import { ActionForm } from "@/components/action-form";
 import { LocalTime } from "@/components/interactive";
-import { CollegeCard } from "@/components/college-card";
+import { UniversityCard } from "@/components/university-card";
 import { manageAction, changeBookingAction, logoutAction } from "@/app/actions";
 import { streams, facilities } from "@/lib/config";
 import { Params, scalar, Institution } from "@/lib/data";
@@ -61,7 +61,7 @@ type Booking = {
 const menus = {
   student: [
     ["", "Overview", LayoutDashboard],
-    ["saved", "Saved colleges", Heart],
+    ["saved", "Saved universities", Heart],
     ["counselling", "Counselling bookings", Video],
     ["visits", "Campus visits", CalendarDays],
     ["notifications", "Notifications", Bell],
@@ -213,7 +213,7 @@ export async function Dashboard({
     let counts: { label: string; value: number }[] = [];
     if (role === "student") {
       for (const [table, label] of [
-        ["saved_institutions", "Saved colleges"],
+        ["saved_institutions", "Saved universities"],
         ["counselling_bookings", "Counselling requests"],
         ["campus_visit_bookings", "Campus visit requests"],
       ]) {
@@ -363,7 +363,7 @@ export async function Dashboard({
         ) : (
           <Empty title="No upcoming conversations" icon="compass">
             {role === "student"
-              ? "Explore a college and request a session when you’re ready."
+              ? "Explore a university and request a session when you’re ready."
               : "Upcoming counselling requests will appear here."}
           </Empty>
         )}
@@ -371,12 +371,12 @@ export async function Dashboard({
           className="text-link"
           href={
             role === "student"
-              ? "/colleges"
+              ? "/universities"
               : `${base}/${role === "admin" ? "applications" : "schedule"}`
           }
         >
           {role === "student"
-            ? "Explore colleges"
+            ? "Explore universities"
             : role === "admin"
               ? "Review institution applications"
               : "Manage available times"}{" "}
@@ -397,12 +397,12 @@ export async function Dashboard({
     content = (
       <>
         {data?.length ? (
-          <div className="college-grid listing-grid">
+          <div className="university-grid listing-grid">
             {data.map((row) => (
               <div key={row.id}>
                 {row.institutions ? (
-                  <CollegeCard
-                    college={row.institutions as unknown as Institution}
+                  <UniversityCard
+                    university={row.institutions as unknown as Institution}
                   />
                 ) : (
                   <p>This institution is currently unavailable.</p>
@@ -421,7 +421,7 @@ export async function Dashboard({
           </div>
         ) : (
           <Empty title="Leave room for possibilities">
-            Save a college from its profile and come back to it here.
+            Save a university from its profile and come back to it here.
           </Empty>
         )}
         <Link className="text-link" href="/compare">
@@ -1491,15 +1491,15 @@ export async function Dashboard({
           );
         })}
         {role === "student" && (
-          <Link href="/colleges">
+          <Link href="/universities">
             <CompassIcon />
-            Explore colleges
+            Explore universities
           </Link>
         )}
         {role !== "admin" && (
           <Link href="/compare">
             <GitCompareArrows size={16} />
-            Compare colleges
+            Compare universities
           </Link>
         )}
         {role === "admin" && (

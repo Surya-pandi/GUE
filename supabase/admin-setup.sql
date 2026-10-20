@@ -1,4 +1,4 @@
--- Run in the Supabase SQL editor after migrations 001 through 008.
+-- Run in the Supabase SQL editor after migrations 001 through 009.
 -- First register and verify the intended admin account normally.
 -- Replace the email below with that account's exact email, then run this file.
 -- This is a manual setup script, not an automatically applied migration.

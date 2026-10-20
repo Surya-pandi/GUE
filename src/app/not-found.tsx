@@ -6,8 +6,8 @@ export default function NotFound() {
       <Empty title="This path doesn’t lead to a page." icon="compass">
         The page may have moved, or the institution may not be published.
       </Empty>
-      <Link className="button" href="/colleges">
-        Explore colleges
+      <Link className="button" href="/universities">
+        Explore universities
       </Link>
     </div>
   );

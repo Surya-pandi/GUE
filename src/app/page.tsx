@@ -15,7 +15,7 @@ import {
   MoveUpRight,
 } from "lucide-react";
 import { HeroMedia } from "@/components/interactive";
-import { CollegeCard } from "@/components/college-card";
+import { UniversityCard } from "@/components/university-card";
 import { institutions } from "@/lib/data";
 import { streams } from "@/lib/config";
 import { session } from "@/lib/auth";
@@ -31,7 +31,7 @@ const descriptions = [
 ];
 export default async function Home() {
   const s = await session();
-  const colleges = s ? await institutions({}, 3) : { rows: [] };
+  const universities = s ? await institutions({}, 3) : { rows: [] };
   return (
     <>
       <section className="campus-hero" aria-labelledby="hero-title">
@@ -48,8 +48,8 @@ export default async function Home() {
             Find your people. Discover your campus. Make room for who you could
             become.
           </p>
-          <Link className="campus-hero-link" href="/colleges">
-            Find your college <ArrowUpRight size={20} />
+          <Link className="campus-hero-link" href="/universities">
+            Find your university <ArrowUpRight size={20} />
           </Link>
         </div>
         <div className="campus-hero-film">
@@ -80,7 +80,7 @@ export default async function Home() {
             </p>
             <Link
               className="future-cta"
-              href={s ? "/colleges" : "/register/student?next=/colleges"}
+              href={s ? "/universities" : "/register/student?next=/universities"}
             >
               {s ? "Explore your possibilities" : "Start your journey"}{" "}
               <ArrowUpRight size={20} />
@@ -110,7 +110,7 @@ export default async function Home() {
                 icon: Building2,
                 title: "A place to belong",
                 description: "Discover a university that feels like you.",
-                href: "/colleges",
+                href: "/universities",
                 label: "EXPLORE UNIVERSITIES",
               },
               {
@@ -169,7 +169,7 @@ export default async function Home() {
             const Icon = icons[i];
             return (
               <Link
-                href={`/colleges?stream=${encodeURIComponent(stream)}`}
+                href={`/universities?stream=${encodeURIComponent(stream)}`}
                 className="stream"
                 key={stream}
               >
@@ -190,16 +190,16 @@ export default async function Home() {
             <div>
               <p className="eyebrow">A PLACE TO BELONG</p>
               <h2>Discover your next possibility.</h2>
-              <p>Get to know the colleges behind your shortlist.</p>
+              <p>Get to know the universities behind your shortlist.</p>
             </div>
-            <Link className="button secondary" href="/colleges">
-              Explore colleges <ArrowRight size={17} />
+            <Link className="button secondary" href="/universities">
+              Explore universities <ArrowRight size={17} />
             </Link>
           </div>
-          {colleges.rows.length ? (
-            <div className="college-grid">
-              {colleges.rows.map((c) => (
-                <CollegeCard key={c.id} college={c} />
+          {universities.rows.length ? (
+            <div className="university-grid">
+              {universities.rows.map((c) => (
+                <UniversityCard key={c.id} university={c} />
               ))}
             </div>
           ) : (
@@ -213,11 +213,11 @@ export default async function Home() {
                 </h3>
                 <p>
                   {s
-                    ? "We’re preparing our institution directory. Verified college profiles, published course details, and campus photographs will appear here as institutions join."
+                    ? "We’re preparing our institution directory. Verified university profiles, published course details, and campus photographs will appear here as institutions join."
                     : "Register or log in to explore university profiles, compare courses, and connect with admissions teams."}
                 </p>
                 {!s && (
-                  <Link className="button" href="/login?next=/colleges">
+                  <Link className="button" href="/login?next=/universities">
                     Log in to explore universities <ArrowRight size={17} />
                   </Link>
                 )}
@@ -239,7 +239,7 @@ export default async function Home() {
                   <Check size={17} />
                 </p>
                 <Link href="/register/institution">
-                  Represent a college? Join the directory{" "}
+                  Represent a university? Join the directory{" "}
                   <ArrowUpRight size={16} />
                 </Link>
               </div>
@@ -267,7 +267,7 @@ export default async function Home() {
             [
               Compass,
               "Find your possibilities",
-              "Explore colleges by course, location, fees, and the things that matter to you.",
+              "Explore universities by course, location, fees, and the things that matter to you.",
             ],
             [
               Video,
@@ -313,13 +313,13 @@ export default async function Home() {
           <p>
             The library you’ll get lost in. The people you’ll learn alongside.
             The spaces where your ideas will grow. There’s more to choosing a
-            college than a prospectus.
+            university than a prospectus.
           </p>
           <p>
             Explore institution-provided photographs and virtual tours where
             available, then arrange a visit to see it for yourself.
           </p>
-          <Link className="button" href="/colleges">
+          <Link className="button" href="/universities">
             Explore campus life <ArrowUpRight size={17} />
           </Link>
         </div>
@@ -337,19 +337,19 @@ export default async function Home() {
           {[
             [
               "Who is this platform for?",
-              "Students exploring their options after Class 12, their families, and college admissions teams. Register and log in to explore university profiles and use the portal.",
+              "Students exploring their options after Class 12, their families, and university admissions teams. Register and log in to explore university profiles and use the portal.",
             ],
             [
               "How do I book a counselling session?",
-              "Open a college profile, choose an available counselling slot, and send your questions. The institution reviews the request; your dashboard shows the confirmation and meeting link.",
+              "Open a university profile, choose an available counselling slot, and send your questions. The institution reviews the request; your dashboard shows the confirmation and meeting link.",
             ],
             [
               "Does a verified profile guarantee admission?",
               "No. Verification refers to the institution review process. Eligibility, fees, and admission decisions remain with each institution. Confirm details directly before applying.",
             ],
             [
-              "Can I visit a college before applying?",
-              "When a college publishes campus-visit availability, you can request a time and specify your group size. Wait for confirmation before travelling.",
+              "Can I visit a university before applying?",
+              "When a university publishes campus-visit availability, you can request a time and specify your group size. Wait for confirmation before travelling.",
             ],
           ].map(([q, a]) => (
             <details key={q}>
@@ -365,7 +365,7 @@ export default async function Home() {
       <section className="institution-band">
         <div className="container">
           <div>
-            <p className="eyebrow">FOR COLLEGES & UNIVERSITIES</p>
+            <p className="eyebrow">FOR UNIVERSITIES</p>
             <h2>Help the right students find you.</h2>
             <p>
               Tell your story. Start meaningful conversations. Welcome your next

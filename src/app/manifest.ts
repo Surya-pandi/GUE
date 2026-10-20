@@ -7,7 +7,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: config.name,
     short_name: "GUE",
     description:
-      "Discover your college, explore courses, and plan your next chapter.",
+      "Discover your university, explore courses, and plan your next chapter.",
     start_url: "/",
     scope: "/",
     display: "standalone",

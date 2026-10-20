@@ -15,12 +15,12 @@ export async function generateMetadata({
 }) {
   const c = await institution((await params).slug);
   return {
-    title: c?.name || "College not found",
+    title: c?.name || "University not found",
     description: c?.description.slice(0, 160),
-    alternates: { canonical: `/colleges/${c?.slug || ""}` },
+    alternates: { canonical: `/universities/${c?.slug || ""}` },
   };
 }
-export default async function College({
+export default async function University({
   params,
 }: {
   params: Promise<{ slug: string }>;
@@ -62,7 +62,7 @@ export default async function College({
   return (
     <div className="container page-content">
       <div className="breadcrumbs">
-        <Link href="/colleges">Explore colleges</Link>
+        <Link href="/universities">Explore universities</Link>
         <span>/</span>
         {c.name}
       </div>
@@ -214,20 +214,20 @@ export default async function College({
           </p>
           <Link
             className="button"
-            href={`/colleges/${c.slug}/book?kind=counselling`}
+            href={`/universities/${c.slug}/book?kind=counselling`}
           >
             Book online counselling
           </Link>
           <Link
             className="button secondary"
-            href={`/colleges/${c.slug}/book?kind=visit`}
+            href={`/universities/${c.slug}/book?kind=visit`}
           >
             Schedule a campus visit
           </Link>
           {s?.profile.role === "student" ? (
             <ActionForm
               action={manageAction}
-              submit={saved ? "Remove from saved" : "Save this college"}
+              submit={saved ? "Remove from saved" : "Save this university"}
             >
               <input type="hidden" name="operation" value="save" />
               <input type="hidden" name="institution_id" value={c.id} />
@@ -236,9 +236,9 @@ export default async function College({
           ) : (
             <Link
               className="text-link"
-              href={`/login?next=/colleges/${c.slug}`}
+              href={`/login?next=/universities/${c.slug}`}
             >
-              Sign in to save this college
+              Sign in to save this university
             </Link>
           )}
           <p className="form-note">

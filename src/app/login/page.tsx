@@ -46,7 +46,7 @@ export default async function Login({
           </Link>
         </div>
         <p className="form-note">
-          Represent a college?{" "}
+          Represent a university?{" "}
           <Link href="/register/institution">Register your institution</Link>.
         </p>
         <p className="form-note">

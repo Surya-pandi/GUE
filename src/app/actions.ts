@@ -139,8 +139,8 @@ export async function institutionAction(
       state: z.string().min(2),
       institution_type: z.enum([
         "University",
-        "Private college",
-        "Government college",
+        "Private university",
+        "Government university",
         "Deemed university",
       ]),
       representative_name: z.string().min(2),
@@ -225,7 +225,7 @@ export async function manageAction(
     return {
       success:
         operation === "save"
-          ? "Your saved colleges have been updated."
+          ? "Your saved universities have been updated."
           : operation === "delete_account"
             ? "Your deletion request has been recorded for administrator review."
             : "Changes saved.",

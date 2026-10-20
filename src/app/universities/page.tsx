@@ -1,14 +1,14 @@
 import Link from "next/link";
 import { PageTitle, Empty, Field, Select } from "@/components/ui";
-import { CollegeCard } from "@/components/college-card";
+import { UniversityCard } from "@/components/university-card";
 import { institutions, Params, scalar } from "@/lib/data";
 import { streams, facilities } from "@/lib/config";
 export const metadata = {
-  title: "Explore colleges",
-  alternates: { canonical: "/colleges" },
+  title: "Explore universities",
+  alternates: { canonical: "/universities" },
 };
 export const dynamic = "force-dynamic";
-export default async function Colleges({
+export default async function Universities({
   searchParams,
 }: {
   searchParams: Promise<Params>;
@@ -22,13 +22,13 @@ export default async function Colleges({
       if (typeof v === "string") query.set(k, v);
     });
     query.set("page", String(n));
-    return "/colleges?" + query.toString();
+    return "/universities?" + query.toString();
   }
   return (
     <div className="container page-content">
       <PageTitle
         eyebrow="FIND YOUR POSSIBILITIES"
-        title="A college that fits your future."
+        title="A university that fits your future."
       >
         Start with what matters to you. Explore, shortlist, and compare at your
         own pace.
@@ -36,9 +36,9 @@ export default async function Colleges({
       <div className="filters-layout">
         <aside className="filter-panel">
           <h3>Refine your search</h3>
-          <form action="/colleges">
+          <form action="/universities">
             <Field
-              label="Search colleges & locations"
+              label="Search universities & locations"
               name="q"
               defaultValue={scalar(p, "q")}
               placeholder="Name or keyword"
@@ -67,8 +67,8 @@ export default async function Colleges({
               name="institution_type"
               options={[
                 "University",
-                "Private college",
-                "Government college",
+                "Private university",
+                "Government university",
                 "Deemed university",
               ]}
               all="All types"
@@ -110,22 +110,22 @@ export default async function Colleges({
             <button className="button" type="submit">
               Apply filters
             </button>
-            <Link href="/colleges" className="text-link">
+            <Link href="/universities" className="text-link">
               Clear all filters
             </Link>
           </form>
         </aside>
         <div>
           <div className="results-heading">
-            <h2>{result.count} colleges to explore</h2>
+            <h2>{result.count} universities to explore</h2>
             <Link className="text-link" href="/compare">
               Your comparison →
             </Link>
           </div>
           {result.rows.length ? (
-            <div className="college-grid listing-grid">
+            <div className="university-grid listing-grid">
               {result.rows.map((c) => (
-                <CollegeCard key={c.id} college={c} />
+                <UniversityCard key={c.id} university={c} />
               ))}
             </div>
           ) : (
@@ -134,7 +134,7 @@ export default async function Colleges({
               title={
                 result.unavailable
                   ? "The directory is getting ready"
-                  : "No colleges found"
+                  : "No universities found"
               }
             >
               {result.unavailable

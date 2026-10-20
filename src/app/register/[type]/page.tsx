@@ -59,8 +59,8 @@ export default async function Register({
                 name="institution_type"
                 options={[
                   "University",
-                  "Private college",
-                  "Government college",
+                  "Private university",
+                  "Government university",
                   "Deemed university",
                 ]}
               />

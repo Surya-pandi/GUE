@@ -94,8 +94,8 @@ export default async function Book({
             back or contact the institution.
           </Empty>
         )}
-        <Link className="text-link" href={`/colleges/${c.slug}`}>
-          ← Back to college
+        <Link className="text-link" href={`/universities/${c.slug}`}>
+          ← Back to university
         </Link>
       </div>
     </div>

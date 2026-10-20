@@ -53,24 +53,24 @@ export function SearchInput({ suggestions = true }: { suggestions?: boolean }) {
         onKeyDown={(e) => {
           if (e.key === "Escape") setOpen(false);
         }}
-        placeholder="College, course, or keyword"
-        aria-label="College, course, or keyword"
+        placeholder="University, course, or keyword"
+        aria-label="University, course, or keyword"
         autoComplete="off"
         aria-controls={
-          open && results.length ? "college-suggestions" : undefined
+          open && results.length ? "university-suggestions" : undefined
         }
       />
       {open && q.length >= 2 && (loading || results.length > 0) && (
         <div
-          id="college-suggestions"
+          id="university-suggestions"
           className="suggestion-results"
-          aria-label="College suggestions"
+          aria-label="University suggestions"
         >
           {loading ? (
-            <span role="status">Searching colleges…</span>
+            <span role="status">Searching universities…</span>
           ) : (
             results.map((r) => (
-              <Link key={r.slug} href={`/colleges/${r.slug}`}>
+              <Link key={r.slug} href={`/universities/${r.slug}`}>
                 {r.name}
                 <small>{r.city}</small>
               </Link>

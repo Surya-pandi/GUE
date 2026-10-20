@@ -1,6 +1,6 @@
 # GLOBAL UNIVERSITY EXPO
 
-A Next.js App Router / TypeScript college discovery and counselling portal, built for Supabase PostgreSQL, Auth, and Storage. Branding is configurable. The repository contains the application, eight SQL migrations, authorization/workflow tests, and deployment configuration.
+A Next.js App Router / TypeScript university discovery and counselling portal, built for Supabase PostgreSQL, Auth, and Storage. Branding is configurable. The repository contains the application, nine SQL migrations, authorization/workflow tests, and deployment configuration.
 
 ## Run locally
 
@@ -10,14 +10,14 @@ Copy-Item .env.example .env.local
 npm run dev
 ```
 
-Open http://localhost:3000. The landing page is public, with its video hero, editorial journey panel with an orbital illustration and staggered discovery cards, study streams, and information sections. Visitors must register and log in before accessing university listings, profiles, courses, comparisons, or search suggestions. Signed-out visitors see a login invitation instead of university records on the landing page; discovery links and search submissions send them through login and preserve their destination. With blank Supabase variables, account forms explain that services are not connected. There are no fake college records, reviews, analytics, meeting links, or local mock accounts.
+Open http://localhost:3000. The landing page is public, with its video hero, editorial journey panel with an orbital illustration and staggered discovery cards, study streams, and information sections. Visitors must register and log in before accessing university listings, profiles, courses, comparisons, or search suggestions. Signed-out visitors see a login invitation instead of university records on the landing page; discovery links and search submissions send them through login and preserve their destination. With blank Supabase variables, account forms explain that services are not connected. There are no fake university records, reviews, analytics, meeting links, or local mock accounts.
 
 ## Connect Supabase
 
 The `.env.example` template contains the Supabase URL, legacy anon key, and an optional server-only service-role key. Only the URL and anon key are needed for local authentication and database access. Branding and background videos use their built-in defaults. For deployment, also set `NEXT_PUBLIC_SITE_URL` to your website's public URL so verification and password-reset links return to the correct site.
 
 1. Create a Supabase project. Set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` in `.env.local`. Existing `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` settings remain supported as a fallback. Keep `SUPABASE_SERVICE_ROLE_KEY` server-only; it is not used for login or registration.
-2. Apply `supabase/migrations/001_schema.sql` through `008_admin_deletion.sql` in numeric order using the Supabase SQL editor, or your migration tooling against the project database. Do not apply these to a database with an incompatible existing schema.
+2. Apply `supabase/migrations/001_schema.sql` through `009_university_terminology.sql` in numeric order using the Supabase SQL editor, or your migration tooling against the project database. Do not apply these to a database with an incompatible existing schema.
 3. In Supabase Auth, enable email verification, configure production SMTP, set the Site URL, and allow `http://localhost:3000/auth/callback` plus your production `/auth/callback` URL. Use PKCE-compatible confirmation/recovery email templates that return to the configured redirect URL. The callback exchanges the authorization code and preserves the session cookie.
 4. Configure Auth signup/login/recovery rate limits and bot protection appropriate to your launch traffic. Auth endpoint throttling is owned by Supabase; application mutations also have database rate limits. Test the confirmation and password-recovery flow on the actual project before launch.
 5. Register and verify the intended administrator account normally. Open `supabase/admin-setup.sql`, replace `REPLACE_WITH_VERIFIED_ADMIN_EMAIL` with that account's email, and run it in the trusted Supabase SQL editor. It checks email verification, assigns only that account the `super_admin` role, and records the change in the audit log. Do not expose this setup script as an application endpoint.
@@ -28,7 +28,7 @@ Never put an admin-assignment function in browser code or grant profile-role wri
 ## Main workflows
 
 - Public: landing page, login, student/institution registration, email callback, password recovery, privacy, and terms. The email worker independently requires its cron secret.
-- Signed-in discovery: search colleges by name, location, and published course names; URL-based filters, pagination, course discovery, institution detail pages, shortlist comparison, and external maps/tours. Login and student registration preserve the requested destination. Registration with email confirmation waits for verification; when confirmation is disabled, the new authenticated session opens the requested page immediately.
+- Signed-in discovery: search universities by name, location, and published course names; URL-based filters, pagination, course discovery, institution detail pages, shortlist comparison, and external maps/tours. Login and student registration preserve the requested destination. Registration with email confirmation waits for verification; when confirmation is disabled, the new authenticated session opens the requested page immediately.
 - Student: verified account, editable profile and interests, saved institutions, booking requests, cancellation/rescheduling requests, notifications, password recovery, and a reviewed account-deletion request.
 - Institution: pending application, profile/course editing, private verification uploads, campus photography and tour submissions, date-specific counselling/visit availability, booking decisions, enquiries, aggregate reports, and permission-scoped existing-account staff management.
 - Administrator: institution review and publication, private document review, explicit public-media approval, course categories, student list, booking oversight, aggregate CSV exports, audit log, and cancellation/retention settings.
@@ -72,7 +72,7 @@ Database notifications and outbox insertion share the business transaction. `/ap
 
 The app includes a web manifest, standalone display mode, home-screen icons, and a service worker. Deploy over HTTPS (localhost also works for development). Use **Install app** in the header: supported browsers offer an install prompt; other browsers show installation instructions. On iPhone/iPad, open the site in Safari and use Share → Add to Home Screen. The install option is hidden when running as a standalone app.
 
-Only `/offline.html` is cached. Offline navigation shows a reconnect screen; account pages, college records, bookings, API responses, and videos are not cached. Authentication and bookings require a connection. `/manifest.webmanifest`, `/sw.js`, and `/offline.html` are publicly accessible without authentication. The worker uses network-only navigation with an offline fallback, so deployments do not serve stale account pages. Bump the `gue-offline-v1` cache version in `public/sw.js` when updating the offline document.
+Only `/offline.html` is cached. Offline navigation shows a reconnect screen; account pages, university records, bookings, API responses, and videos are not cached. Authentication and bookings require a connection. `/manifest.webmanifest`, `/sw.js`, and `/offline.html` are publicly accessible without authentication. The worker uses network-only navigation with an offline fallback, so deployments do not serve stale account pages. Bump the `gue-offline-v2` cache version in `public/sw.js` when updating the offline document.
 
 The homepage overlays compact editorial text on the campus film, with a subtle gradient behind the copy. On mobile, the copy sits near the bottom to keep the upper footage clear. The video autoplays without a visible playback button and respects reduced-motion preferences.
 

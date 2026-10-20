@@ -24,8 +24,33 @@ test("migrations enforce privacy, role protection, booking workflows, and report
     "006_upload_permissions.sql",
     "007_admin_management.sql",
     "008_admin_deletion.sql",
-  ])
+    "009_university_terminology.sql",
+  ]) {
+    if (file === "009_university_terminology.sql") {
+      await db.exec(`
+        insert into auth.users(id,email) values
+          ('00000000-0000-4000-8000-000000000099','migration@test.invalid');
+        insert into public.institutions(owner_user_id,name,slug,institution_type,official_email,city,state)
+        values
+          ('00000000-0000-4000-8000-000000000099','Private fixture','private-fixture','Private college','private@test.invalid','Test','Test'),
+          ('00000000-0000-4000-8000-000000000099','Government fixture','government-fixture','Government college','government@test.invalid','Test','Test');
+      `);
+    }
     await db.exec(await readFile(`supabase/migrations/${file}`, "utf8"));
+  }
+  await t.test("terminology migration converts existing institution types", async () => {
+    const { rows } = await db.query<{ institution_type: string }>(
+      "select institution_type from public.institutions order by institution_type",
+    );
+    assert.deepEqual(rows.map((row) => row.institution_type), [
+      "Government university",
+      "Private university",
+    ]);
+    await db.exec(`
+      delete from public.institutions where owner_user_id='00000000-0000-4000-8000-000000000099';
+      delete from auth.users where id='00000000-0000-4000-8000-000000000099';
+    `);
+  });
   const student = "00000000-0000-4000-8000-000000000001",
     other = "00000000-0000-4000-8000-000000000002",
     owner = "00000000-0000-4000-8000-000000000003",
@@ -72,7 +97,7 @@ test("migrations enforce privacy, role protection, booking workflows, and report
     {
       name: "Test institution",
       institution_type: "University",
-      official_email: "college@test.invalid",
+      official_email: "university@test.invalid",
       city: "Test City",
       state: "Test State",
     },

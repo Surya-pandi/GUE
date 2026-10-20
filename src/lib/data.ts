@@ -89,7 +89,7 @@ export async function institutions(p: Params = {}, limit = 12) {
     })
     .range((page - 1) * limit, page * limit - 1);
   if (error)
-    throw new Error("College listings could not be loaded. Please try again.");
+    throw new Error("University listings could not be loaded. Please try again.");
   return { rows: data as Institution[], count: count || 0, unavailable: false };
 }
 export async function institution(slug: string) {
@@ -102,7 +102,7 @@ export async function institution(slug: string) {
     .eq("verification_status", "approved")
     .not("published_at", "is", null)
     .maybeSingle();
-  if (error) throw new Error("This college could not be loaded.");
+  if (error) throw new Error("This university could not be loaded.");
   return data as Institution | null;
 }
 export function money(value: number | null) {

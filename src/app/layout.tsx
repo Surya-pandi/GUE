@@ -9,7 +9,7 @@ export const metadata: Metadata = {
     template: `%s | ${config.name}`,
   },
   description:
-    "Discover colleges, compare courses, speak with admissions teams, and plan your campus visit.",
+    "Discover universities, compare courses, speak with admissions teams, and plan your campus visit.",
   openGraph: { type: "website", siteName: config.name },
   applicationName: config.name,
   appleWebApp: { capable: true, statusBarStyle: "default", title: "GUE" },

@@ -5,7 +5,7 @@ import { configured } from "@/lib/config";
 import { db } from "@/lib/supabase/server";
 import { Institution, Params, scalar, money } from "@/lib/data";
 import { uuid } from "@/lib/validation";
-export const metadata = { title: "Compare colleges" };
+export const metadata = { title: "Compare universities" };
 export default async function Compare({
   searchParams,
 }: {
@@ -15,7 +15,7 @@ export default async function Compare({
     .split(",")
     .filter((id) => uuid.safeParse(id).success)
     .slice(0, 4);
-  let colleges: Institution[] = [];
+  let universities: Institution[] = [];
   if (configured && ids.length) {
     const supabase = await db();
     const { data, error } = await supabase
@@ -25,7 +25,7 @@ export default async function Compare({
       .eq("verification_status", "approved")
       .not("published_at", "is", null);
     if (error) throw new Error("Comparison could not be loaded.");
-    colleges = data as Institution[];
+    universities = data as Institution[];
   }
   const fields: [string, (c: Institution) => string][] = [
     ["Location", (c) => `${c.city}, ${c.state}`],
@@ -60,15 +60,15 @@ export default async function Compare({
       >
         Compare up to four institutions using their published information.
       </PageTitle>
-      {colleges.length ? (
+      {universities.length ? (
         <div className="table-wrap">
           <table>
             <thead>
               <tr>
                 <th>What matters to you</th>
-                {colleges.map((c) => (
+                {universities.map((c) => (
                   <th key={c.id}>
-                    <Link className="text-link" href={`/colleges/${c.slug}`}>
+                    <Link className="text-link" href={`/universities/${c.slug}`}>
                       {c.name} ↗
                     </Link>
                   </th>
@@ -79,7 +79,7 @@ export default async function Compare({
               {fields.map(([label, value]) => (
                 <tr key={label}>
                   <th scope="row">{label}</th>
-                  {colleges.map((c) => (
+                  {universities.map((c) => (
                     <td key={c.id}>{value(c)}</td>
                   ))}
                 </tr>
@@ -93,7 +93,7 @@ export default async function Compare({
             icon="compass"
             title="Give your shortlist a little perspective"
           >
-            Use the Compare button on college profiles to choose your options.
+            Use the Compare button on university profiles to choose your options.
             Missing information will always be marked clearly.
           </Empty>
           <CompareLoader />

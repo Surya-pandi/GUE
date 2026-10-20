@@ -89,7 +89,7 @@ export default async function Courses({
               </p>
               <Link
                 className="text-link"
-                href={`/colleges/${c.institutions?.slug}`}
+                href={`/universities/${c.institutions?.slug}`}
               >
                 Explore institution →
               </Link>
@@ -129,9 +129,9 @@ export default async function Courses({
           <Link
             key={s}
             className="tag"
-            href={`/colleges?stream=${encodeURIComponent(s)}`}
+            href={`/universities?stream=${encodeURIComponent(s)}`}
           >
-            {s} colleges →
+            {s} universities →
           </Link>
         ))}
       </div>

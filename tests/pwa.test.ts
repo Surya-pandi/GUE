@@ -66,7 +66,7 @@ test("failed page navigation shows the offline screen", async () => {
     request: {
       method: "GET",
       mode: "navigate",
-      url: "https://gue.test/colleges",
+      url: "https://gue.test/universities",
     },
     respondWith: (value: Promise<Response>) => {
       response = value;

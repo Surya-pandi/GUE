@@ -42,7 +42,7 @@ for (const path of pages) {
         "University access requires login",
       );
       assert.ok(
-        !html.includes('class="college-card"'),
+        !html.includes('class="university-card"'),
         "No university records on the signed-out landing page",
       );
     }
@@ -59,10 +59,10 @@ const offline = await fetch(base + "/offline.html", { redirect: "manual" });
 assert.equal(offline.status, 200, "Offline screen works without login");
 assert.ok((await offline.text()).includes("You're offline."));
 for (const path of [
-  "/colleges",
-  "/colleges?stream=Engineering&city=Chennai",
-  "/colleges/not-a-real-college",
-  "/colleges/example/book",
+  "/universities",
+  "/universities?stream=Engineering&city=Chennai",
+  "/universities/not-a-real-university",
+  "/universities/example/book",
   "/courses",
   "/compare",
   "/about",
@@ -95,7 +95,7 @@ for (const path of [
 }
 for (const path of [
   "/api/reports",
-  "/api/search?q=college",
+  "/api/search?q=university",
   "/api/cron/email",
   "/api/documents/00000000-0000-4000-8000-000000000001",
 ]) {
@@ -106,12 +106,12 @@ assert.equal(
   (await fetch(base + "/api/uploads", { method: "POST" })).status,
   401,
 );
-const forged = await fetch(base + "/colleges", {
+const forged = await fetch(base + "/universities", {
   redirect: "manual",
   headers: { Cookie: "authenticated=true; session=fake" },
 });
 assert.equal(forged.status, 307, "Client cookies cannot bypass authentication");
-const destination = "/colleges?stream=Engineering&city=Chennai";
+const destination = "/universities?stream=Engineering&city=Chennai";
 const login = await (
   await fetch(base + "/login?next=" + encodeURIComponent(destination))
 ).text();
@@ -135,7 +135,7 @@ assert.equal(
 );
 const sitemap = await (await fetch(base + "/sitemap.xml")).text();
 assert.ok(
-  !sitemap.includes("/colleges"),
+  !sitemap.includes("/universities"),
   "Sitemap does not expose protected discovery pages",
 );
 console.log(

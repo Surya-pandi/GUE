@@ -19,7 +19,7 @@ export function CompareButton({ id }: { id: string }) {
       if (selected) ids = ids.filter((x) => x !== id);
       else if (ids.length < 4) ids.push(id);
       else {
-        setMessage("Compare up to four colleges. Remove one first.");
+        setMessage("Compare up to four universities. Remove one first.");
         return;
       }
       localStorage.setItem("compare", JSON.stringify(ids));
@@ -59,11 +59,11 @@ export function CompareLoader() {
   }, []);
   return href ? (
     <Link className="button" href={href}>
-      Show selected colleges <ArrowRight size={16} />
+      Show selected universities <ArrowRight size={16} />
     </Link>
   ) : (
-    <Link className="button" href="/colleges">
-      Find colleges to compare <ArrowRight size={16} />
+    <Link className="button" href="/universities">
+      Find universities to compare <ArrowRight size={16} />
     </Link>
   );
 }

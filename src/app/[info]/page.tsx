@@ -51,7 +51,7 @@ export default async function Info({
             location. Use counselling sessions to ask questions, and campus
             visits to experience a place firsthand.
           </p>
-          <Link className="button" href="/colleges">
+          <Link className="button" href="/universities">
             Start exploring →
           </Link>
         </div>
@@ -107,9 +107,9 @@ export default async function Info({
             Speak directly with an institution’s admissions team about courses,
             eligibility, published fees, scholarships, or campus life.
           </p>
-          <h2>Choose a college. Bring your questions.</h2>
+          <h2>Choose a university. Bring your questions.</h2>
           <ol>
-            <li>Explore colleges and open a profile that interests you.</li>
+            <li>Explore universities and open a profile that interests you.</li>
             <li>
               Select an available counselling slot and add your questions.
             </li>
@@ -125,8 +125,8 @@ export default async function Info({
             institution-provided external meeting links; you may need the
             meeting provider’s app or browser support.
           </p>
-          <Link className="button" href="/colleges">
-            Find a college to talk to →
+          <Link className="button" href="/universities">
+            Find a university to talk to →
           </Link>
         </div>
       )}

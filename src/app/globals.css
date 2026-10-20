@@ -1367,7 +1367,7 @@ summary::-webkit-details-marker {
 .results-heading span {
   font-size: 12px;
 }
-.college-grid {
+.university-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 23px;
@@ -1375,19 +1375,19 @@ summary::-webkit-details-marker {
 .listing-grid {
   grid-template-columns: repeat(2, 1fr);
 }
-.college-card {
+.university-card {
   border: 1px solid var(--border);
   border-radius: 8px;
   overflow: hidden;
   background: white;
 }
-.college-cover {
+.university-cover {
   height: 195px;
   position: relative;
   display: block;
   background: #eef1f6;
 }
-.college-cover img {
+.university-cover img {
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -1402,7 +1402,7 @@ summary::-webkit-details-marker {
   border-radius: 3px;
   color: var(--heading);
 }
-.college-image-placeholder {
+.university-image-placeholder {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1412,7 +1412,7 @@ summary::-webkit-details-marker {
   color: #8899af;
   font-size: 10px;
 }
-.college-card-body {
+.university-card-body {
   padding: 20px;
 }
 .location {
@@ -1422,11 +1422,11 @@ summary::-webkit-details-marker {
   font-size: 11px;
   margin-top: 0;
 }
-.college-card h3 {
+.university-card h3 {
   font-size: 18px;
   margin-bottom: 10px;
 }
-.college-card h3 a {
+.university-card h3 a {
   display: flex;
   justify-content: space-between;
   gap: 12px;
@@ -1438,7 +1438,7 @@ summary::-webkit-details-marker {
   font-size: 10px;
   color: #18794e;
 }
-.college-card-body > p:not(.location) {
+.university-card-body > p:not(.location) {
   font-size: 11px;
 }
 .card-bottom {
@@ -2064,7 +2064,7 @@ tr:last-child td {
     flex-direction: row;
     gap: 22px;
   }
-  .college-grid {
+  .university-grid {
     grid-template-columns: repeat(2, 1fr);
   }
   .filters-layout {
@@ -2388,14 +2388,14 @@ tr:last-child td {
   .results-heading h2 {
     font-size: 19px;
   }
-  .college-grid {
+  .university-grid {
     grid-template-columns: 1fr;
   }
   .card-bottom {
     flex-direction: row;
     align-items: center;
   }
-  .college-cover {
+  .university-cover {
     height: 210px;
   }
   .empty {

@@ -29,7 +29,7 @@ export async function Header() {
       <div className="container header-inner">
         <Brand />
         <nav className="desktop-nav" aria-label="Main navigation">
-          <Link href="/colleges">Explore colleges</Link>
+          <Link href="/universities">Explore universities</Link>
           <Link href="/courses">Explore courses</Link>
           <Link href="/#how-it-works">How it works</Link>
           <Link href="/for-institutions">For institutions</Link>
@@ -61,7 +61,7 @@ export async function Header() {
         <details className="mobile-menu">
           <summary aria-label="Open navigation">Menu</summary>
           <nav>
-            <Link href="/colleges">Explore colleges</Link>
+            <Link href="/universities">Explore universities</Link>
             <Link href="/courses">Explore courses</Link>
             <Link href="/#how-it-works">How it works</Link>
             <Link href="/for-institutions">For institutions</Link>
@@ -99,9 +99,9 @@ export function Footer() {
         </div>
         <div>
           <strong>Discover</strong>
-          <Link href="/colleges">Explore colleges</Link>
+          <Link href="/universities">Explore universities</Link>
           <Link href="/courses">Explore courses</Link>
-          <Link href="/compare">Compare colleges</Link>
+          <Link href="/compare">Compare universities</Link>
           <Link href="/counselling">Counselling</Link>
         </div>
         <div>
@@ -154,11 +154,11 @@ export function PageTitle({
 export function Empty({
   title = "Your next chapter is taking shape",
   children,
-  icon = "college",
+  icon = "university",
 }: {
   title?: string;
   children: React.ReactNode;
-  icon?: "college" | "search" | "compass";
+  icon?: "university" | "search" | "compass";
 }) {
   const Icon =
     icon === "search" ? Search : icon === "compass" ? Compass : Building2;
