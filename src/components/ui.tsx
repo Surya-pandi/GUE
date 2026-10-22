@@ -33,6 +33,7 @@ export async function Header() {
           <Link href="/courses">Explore courses</Link>
           <Link href="/#how-it-works">How it works</Link>
           <Link href="/for-institutions">For institutions</Link>
+          <Link href="/about">About us</Link>
         </nav>
         <div className="header-actions">
           <PwaInstall />
@@ -65,6 +66,7 @@ export async function Header() {
             <Link href="/courses">Explore courses</Link>
             <Link href="/#how-it-works">How it works</Link>
             <Link href="/for-institutions">For institutions</Link>
+            <Link href="/about">About us</Link>
             {s ? (
               <>
                 <Link href="/dashboard">Dashboard</Link>

@@ -11,6 +11,7 @@ export async function proxy(request: NextRequest) {
   if (pathname === "/api/cron/email") return response;
   const publicPage = [
     "/",
+    "/about",
     "/login",
     "/admin/login",
     "/register/student",

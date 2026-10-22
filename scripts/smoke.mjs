@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 const base = process.env.SMOKE_BASE_URL || "http://127.0.0.1:3000";
 const pages = [
   "/",
+  "/about",
   "/privacy",
   "/terms",
   "/login",
@@ -65,7 +66,6 @@ for (const path of [
   "/universities/example/book",
   "/courses",
   "/compare",
-  "/about",
   "/contact",
   "/for-institutions",
   "/counselling",

@@ -71,7 +71,7 @@ export async function POST(request: Request) {
       .from(
         kind === "document"
           ? "institution_verification_documents"
-          : "college_media",
+          : "university_media",
       )
       .select("id", { count: "exact", head: true })
       .eq("institution_id", institution);

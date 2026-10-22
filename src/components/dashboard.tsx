@@ -925,7 +925,7 @@ export async function Dashboard({
   } else if (section === "documents" || section === "gallery") {
     const documents = section === "documents";
     const { data, error } = await supabase
-      .from(documents ? "institution_verification_documents" : "college_media")
+      .from(documents ? "institution_verification_documents" : "university_media")
       .select("*")
       .eq("institution_id", instId)
       .order("created_at", { ascending: false })

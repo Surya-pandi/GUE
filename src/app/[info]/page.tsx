@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AboutPage } from "@/components/about-page";
 import { notFound } from "next/navigation";
 import { Compass, Video, Building2 } from "lucide-react";
 import { PageTitle, Field, Textarea } from "@/components/ui";
@@ -7,7 +8,7 @@ import { enquiryAction } from "@/app/actions";
 import { config } from "@/lib/config";
 import { session } from "@/lib/auth";
 const titles: Record<string, string> = {
-  about: "A clearer way to your next chapter.",
+  about: "About Global University Expo",
   "for-institutions": "Connect with your future students.",
   counselling: "Big questions deserve a real conversation.",
   contact: "Let’s talk.",
@@ -28,34 +29,11 @@ export default async function Info({
 }) {
   const { info } = await params;
   if (!titles[info]) notFound();
+  if (info === "about") return <AboutPage />;
   const s = info === "contact" ? await session() : null;
   return (
     <div className="container page-content">
       <PageTitle eyebrow={config.name.toUpperCase()} title={titles[info]} />
-      {info === "about" && (
-        <div className="prose">
-          <p>
-            {config.name} helps students and families explore their options
-            after Class 12. Discover published institution profiles, compare
-            programs, and connect with admissions representatives.
-          </p>
-          <h2>Information you can act on</h2>
-          <p>
-            We separate published facts from missing information. Institution
-            verification is a review of the profile and supporting materials,
-            not a ranking, accreditation, or guarantee of admission.
-          </p>
-          <h2>Make the decision yours</h2>
-          <p>
-            Build a shortlist around your interests, budget, and preferred
-            location. Use counselling sessions to ask questions, and campus
-            visits to experience a place firsthand.
-          </p>
-          <Link className="button" href="/universities">
-            Start exploring →
-          </Link>
-        </div>
-      )}
       {info === "for-institutions" && (
         <>
           <div className="info-grid">

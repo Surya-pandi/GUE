@@ -34,7 +34,7 @@ export default async function University({
     s,
   ] = await Promise.all([
     supabase
-      .from("college_media")
+      .from("university_media")
       .select("*")
       .eq("institution_id", c.id)
       .eq("is_published", true)

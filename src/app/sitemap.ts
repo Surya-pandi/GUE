@@ -5,6 +5,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   // Discovery pages require login and must not appear in the public sitemap.
   return [
     "",
+    "/about",
     "/login",
     "/register/student",
     "/register/institution",

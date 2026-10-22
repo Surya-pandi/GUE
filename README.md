@@ -1,6 +1,6 @@
 # GLOBAL UNIVERSITY EXPO
 
-A Next.js App Router / TypeScript university discovery and counselling portal, built for Supabase PostgreSQL, Auth, and Storage. Branding is configurable. The repository contains the application, nine SQL migrations, authorization/workflow tests, and deployment configuration.
+A Next.js App Router / TypeScript university discovery and counselling portal, built for Supabase PostgreSQL, Auth, and Storage. Branding is configurable. The repository contains the application, ten SQL migrations, authorization/workflow tests, and deployment configuration.
 
 ## Run locally
 
@@ -17,10 +17,10 @@ Open http://localhost:3000. The landing page is public, with its video hero, edi
 The `.env.example` template contains the Supabase URL, legacy anon key, and an optional server-only service-role key. Only the URL and anon key are needed for local authentication and database access. Branding and background videos use their built-in defaults. For deployment, also set `NEXT_PUBLIC_SITE_URL` to your website's public URL so verification and password-reset links return to the correct site.
 
 1. Create a Supabase project. Set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` in `.env.local`. Existing `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` settings remain supported as a fallback. Keep `SUPABASE_SERVICE_ROLE_KEY` server-only; it is not used for login or registration.
-2. Apply `supabase/migrations/001_schema.sql` through `009_university_terminology.sql` in numeric order using the Supabase SQL editor, or your migration tooling against the project database. Do not apply these to a database with an incompatible existing schema.
+2. Apply `supabase/migrations/001_schema.sql` through `010_university_media.sql` in numeric order using the Supabase SQL editor, or your migration tooling against the project database. Do not apply these to a database with an incompatible existing schema.
 3. In Supabase Auth, enable email verification, configure production SMTP, set the Site URL, and allow `http://localhost:3000/auth/callback` plus your production `/auth/callback` URL. Use PKCE-compatible confirmation/recovery email templates that return to the configured redirect URL. The callback exchanges the authorization code and preserves the session cookie.
 4. Configure Auth signup/login/recovery rate limits and bot protection appropriate to your launch traffic. Auth endpoint throttling is owned by Supabase; application mutations also have database rate limits. Test the confirmation and password-recovery flow on the actual project before launch.
-5. Register and verify the intended administrator account normally. Open `supabase/admin-setup.sql`, replace `REPLACE_WITH_VERIFIED_ADMIN_EMAIL` with that account's email, and run it in the trusted Supabase SQL editor. It checks email verification, assigns only that account the `super_admin` role, and records the change in the audit log. Do not expose this setup script as an application endpoint.
+5. Create the intended administrator in Supabase Authentication (or register normally) and confirm its email. Copy its User UID. Open `supabase/admin-setup.sql`, replace `REPLACE_WITH_ADMIN_USER_UUID` with that UUID, and run it in the trusted Supabase SQL editor. It checks email verification, assigns only that account the `super_admin` role, and records the change in the audit log. Do not expose this setup script as an application endpoint.
 6. Open `/admin/login` and sign in with that email and password. No shared admin password or service-role key is used for administrator login. Ordinary accounts cannot enter the admin workspace. Existing admin users can also use the normal login and open `/admin/dashboard`.
 
 Never put an admin-assignment function in browser code or grant profile-role writes to authenticated users. Signup metadata always produces a student role. An institution application can create institution ownership; owner-approved membership can create staff access, but neither can assign administrators.
@@ -111,3 +111,5 @@ Account deletion and record retention require an administrator procedure; the co
 Browser-based visual and live service testing require a connected browser and real service configuration. In this build session the in-app browser was unavailable, so no claim of completed visual or live integration QA is made.
 
 Technical references: [Next.js App Router](https://nextjs.org/docs/app), [Supabase SSR](https://supabase.com/docs/guides/auth/server-side/creating-a-client).
+
+Database terminology: apply migration 009, then 010 to existing installations. Migration 010 renames the media table to `university_media` and preserves its data and access policies. Deploy the matching application changes together with this migration. Historical migration files retain the old names so existing databases can be upgraded.

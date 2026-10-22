@@ -13,7 +13,7 @@ export async function approveAssetAction(
     const kind = String(f.get("kind"));
     if (kind === "media") {
       const { data: m, error } = await supabase
-        .from("college_media")
+        .from("university_media")
         .select("*")
         .eq("id", id)
         .single();

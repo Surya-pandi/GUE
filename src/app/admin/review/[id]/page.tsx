@@ -17,13 +17,13 @@ export default async function Review({
   const { data: i, error } = await supabase
     .from("institutions")
     .select(
-      "*,courses(*),institution_verification_documents(*),college_media(*),institution_tours(*),institution_reviews(notes)",
+      "*,courses(*),institution_verification_documents(*),university_media(*),institution_tours(*),institution_reviews(notes)",
     )
     .eq("id", id)
     .maybeSingle();
   if (error || !i) notFound();
   const previews = await Promise.all(
-    i.college_media.map(
+    i.university_media.map(
       async (m: {
         id: string;
         storage_path: string;

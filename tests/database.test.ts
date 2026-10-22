@@ -25,6 +25,7 @@ test("migrations enforce privacy, role protection, booking workflows, and report
     "007_admin_management.sql",
     "008_admin_deletion.sql",
     "009_university_terminology.sql",
+    "010_university_media.sql",
   ]) {
     if (file === "009_university_terminology.sql") {
       await db.exec(`
@@ -34,23 +35,69 @@ test("migrations enforce privacy, role protection, booking workflows, and report
         values
           ('00000000-0000-4000-8000-000000000099','Private fixture','private-fixture','Private college','private@test.invalid','Test','Test'),
           ('00000000-0000-4000-8000-000000000099','Government fixture','government-fixture','Government college','government@test.invalid','Test','Test');
+        insert into public.college_media(institution_id,storage_path,alt_text)
+          select id,'migration/media/retained.png','Retained campus photograph'
+          from public.institutions where slug='private-fixture';
       `);
     }
     await db.exec(await readFile(`supabase/migrations/${file}`, "utf8"));
   }
-  await t.test("terminology migration converts existing institution types", async () => {
-    const { rows } = await db.query<{ institution_type: string }>(
-      "select institution_type from public.institutions order by institution_type",
-    );
-    assert.deepEqual(rows.map((row) => row.institution_type), [
-      "Government university",
-      "Private university",
-    ]);
-    await db.exec(`
+  await t.test(
+    "terminology migration converts existing institution types",
+    async () => {
+      assert.equal(
+        (
+          await db.query<{ old_table: string | null }>(
+            "select to_regclass('public.college_media') as old_table",
+          )
+        ).rows[0].old_table,
+        null,
+      );
+      assert.equal(
+        (
+          await db.query<{ alt_text: string }>(
+            "select alt_text from public.university_media",
+          )
+        ).rows[0].alt_text,
+        "Retained campus photograph",
+      );
+      assert.equal(
+        (
+          await db.query<{ relrowsecurity: boolean }>(
+            "select relrowsecurity from pg_class where oid='public.university_media'::regclass",
+          )
+        ).rows[0].relrowsecurity,
+        true,
+      );
+      assert.equal(
+        (
+          await db.query(
+            "select relname from pg_class where relnamespace='public'::regnamespace and relname like '%college%'",
+          )
+        ).rows.length,
+        0,
+      );
+      assert.equal(
+        (
+          await db.query(
+            "select proname from pg_proc where pronamespace='public'::regnamespace and prosrc ilike '%college%'",
+          )
+        ).rows.length,
+        0,
+      );
+      const { rows } = await db.query<{ institution_type: string }>(
+        "select institution_type from public.institutions order by institution_type",
+      );
+      assert.deepEqual(
+        rows.map((row) => row.institution_type),
+        ["Government university", "Private university"],
+      );
+      await db.exec(`
       delete from public.institutions where owner_user_id='00000000-0000-4000-8000-000000000099';
       delete from auth.users where id='00000000-0000-4000-8000-000000000099';
     `);
-  });
+    },
+  );
   const student = "00000000-0000-4000-8000-000000000001",
     other = "00000000-0000-4000-8000-000000000002",
     owner = "00000000-0000-4000-8000-000000000003",
@@ -409,6 +456,52 @@ test("migrations enforce privacy, role protection, booking workflows, and report
     },
   );
   await asUser(owner);
+  await t.test(
+    "university media uploads and approval preserve access restrictions",
+    async () => {
+      const path = `${institution}/media/campus.png`;
+      await db.query(
+        "insert into storage.objects(bucket_id,name) values('institution-private-documents',$1)",
+        [path],
+      );
+      await rpc("record_upload", [
+        institution,
+        path,
+        "media",
+        "University campus",
+      ]);
+      const { rows } = await db.query<{ id: string }>(
+        "select id from public.university_media where storage_path=$1",
+        [path],
+      );
+      assert.equal(rows.length, 1);
+      await asUser(student);
+      assert.equal(
+        (await db.query("select * from public.university_media")).rows.length,
+        0,
+      );
+      await assert.rejects(
+        rpc("approve_asset", ["media", rows[0].id, false]),
+        /Access denied/,
+      );
+      await asUser(admin);
+      await db.query(
+        "insert into storage.objects(bucket_id,name) values('institution-public-media',$1)",
+        [path],
+      );
+      await rpc("approve_asset", ["media", rows[0].id, false]);
+      assert.equal(
+        (
+          await db.query<{ is_published: boolean }>(
+            "select is_published from public.university_media where id=$1",
+            [rows[0].id],
+          )
+        ).rows[0].is_published,
+        true,
+      );
+      await asUser(owner);
+    },
+  );
   await t.test(
     "reminders enqueue once and cancellation cutoff is enforced",
     async () => {
