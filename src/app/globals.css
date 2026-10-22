@@ -277,6 +277,55 @@ summary::-webkit-details-marker {
   letter-spacing: 0.12em;
   color: #365749;
 }
+.guide-audience-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 16px 32px;
+}
+.guide-audience-links a {
+  display: inline-flex;
+  gap: 10px;
+  align-items: center;
+}
+.guide-audiences {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 32px;
+  margin-top: 48px;
+}
+.guide-audience {
+  min-width: 0;
+  scroll-margin-top: 30px;
+}
+.guide-audience-heading {
+  padding: 28px;
+  border-radius: 18px;
+  background: #f2f5ec;
+  margin-bottom: 20px;
+}
+.guide-audience:nth-child(2) .guide-audience-heading {
+  background: #edf2fb;
+}
+.guide-audience-heading h2 {
+  font-size: 28px;
+}
+.guide-audience-heading p {
+  margin-bottom: 0;
+}
+.guide-audience-steps {
+  display: grid;
+  gap: 20px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+@media (max-width: 800px) {
+  .guide-audiences {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+}
 .guide-steps {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -300,7 +349,8 @@ summary::-webkit-details-marker {
   color: #2f6654;
   margin: 8px 0 18px;
 }
-.guide-step h2 {
+.guide-step h2,
+.guide-step h3 {
   font-size: 25px;
 }
 .guide-step p {

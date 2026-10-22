@@ -7,12 +7,15 @@ import {
   MessagesSquare,
   MapPin,
   Check,
+  Building2,
+  ShieldCheck,
+  CalendarDays,
 } from "lucide-react";
 
 export const metadata = {
   title: "How it works",
   description:
-    "From your student profile to university discovery, counselling and campus visits. Plan your next step with Global University Expo.",
+    "Step-by-step guides for students and university teams: registration, profiles, verification, counselling and campus visits.",
 };
 const steps = [
   {
@@ -44,6 +47,36 @@ const steps = [
     note: "Your next chapter is yours to choose.",
   },
 ];
+const universitySteps = [
+  {
+    icon: Building2,
+    title: "Register your university",
+    detail:
+      "Choose University on the registration page and create your representative account. Verify your email if prompted, then submit your university’s official details and contact information.",
+    note: "Use an account belonging to your university representative.",
+  },
+  {
+    icon: ShieldCheck,
+    title: "Complete verification",
+    detail:
+      "Upload supporting documents from your dashboard and add your university profile, courses, and campus photographs. An administrator reviews your submission before publication.",
+    note: "Verification documents stay private; public media needs approval.",
+  },
+  {
+    icon: CalendarDays,
+    title: "Make time for students",
+    detail:
+      "Set available counselling and campus-visit slots. Assign representatives and set visitor capacity so students can request a suitable time.",
+    note: "Keep your availability and representative details up to date.",
+  },
+  {
+    icon: MessagesSquare,
+    title: "Manage conversations and visits",
+    detail:
+      "Review enquiries and booking requests in your dashboard. Confirm or reject requests, provide a supported meeting link for counselling, and keep students informed of their visit arrangements.",
+    note: "Profile and course changes return to administrator review.",
+  },
+];
 
 export default function HowItWorks() {
   return (
@@ -56,40 +89,73 @@ export default function HowItWorks() {
           <em>A clear way forward.</em>
         </h1>
         <p>
-          From your first question to your first campus visit.
+          Two journeys. One place to connect.
           <br />
-          Take it one thoughtful step at a time.
+          Find the steps for students and university teams below.
         </p>
-        <a className="text-link" href="#student-journey">
-          Explore the student journey <ArrowRight size={18} />
-        </a>
+        <nav className="guide-audience-links" aria-label="Choose your guide">
+          <a className="text-link" href="#student-journey">
+            For students <ArrowRight size={18} />
+          </a>
+          <a className="text-link" href="#university-journey">
+            For university teams <ArrowRight size={18} />
+          </a>
+        </nav>
         <div className="guide-chapters">
           <span>01 / YOUR PROFILE</span>
-          <span>02 / YOUR SHORTLIST</span>
+          <span>02 / YOUR OPTIONS</span>
           <span>03 / YOUR CONVERSATIONS</span>
           <span>04 / YOUR VISIT</span>
         </div>
       </section>
-      <section
-        id="student-journey"
-        className="guide-steps"
-        aria-label="The student journey"
-      >
-        {steps.map(({ icon: Icon, title, detail, note }, index) => (
-          <article className="guide-step" key={title}>
-            <span className="guide-number">0{index + 1}</span>
-            <div className="guide-step-body">
-              <Icon size={26} aria-hidden="true" />
-              <h2>{title}</h2>
-              <p>{detail}</p>
-              <span className="guide-note">
-                <Check size={16} aria-hidden="true" />
-                {note}
-              </span>
-            </div>
-          </article>
+      <div className="guide-audiences">
+        {[
+          {
+            id: "student-journey",
+            title: "For students",
+            description:
+              "From discovering your options to planning your visit.",
+            items: steps,
+          },
+          {
+            id: "university-journey",
+            title: "For university teams",
+            description:
+              "From publishing your profile to welcoming future students.",
+            items: universitySteps,
+          },
+        ].map((audience) => (
+          <section
+            id={audience.id}
+            className="guide-audience"
+            aria-labelledby={`${audience.id}-title`}
+            key={audience.id}
+          >
+            <header className="guide-audience-heading">
+              <h2 id={`${audience.id}-title`}>{audience.title}</h2>
+              <p>{audience.description}</p>
+            </header>
+            <ol className="guide-audience-steps">
+              {audience.items.map(
+                ({ icon: Icon, title, detail, note }, index) => (
+                  <li className="guide-step" key={title}>
+                    <span className="guide-number">0{index + 1}</span>
+                    <div className="guide-step-body">
+                      <Icon size={26} aria-hidden="true" />
+                      <h3>{title}</h3>
+                      <p>{detail}</p>
+                      <span className="guide-note">
+                        <Check size={16} aria-hidden="true" />
+                        {note}
+                      </span>
+                    </div>
+                  </li>
+                ),
+              )}
+            </ol>
+          </section>
         ))}
-      </section>
+      </div>
       <section className="guide-expectations">
         <div>
           <p className="eyebrow">GOOD TO KNOW</p>
