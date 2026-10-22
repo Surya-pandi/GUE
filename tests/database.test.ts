@@ -26,6 +26,9 @@ test("migrations enforce privacy, role protection, booking workflows, and report
     "008_admin_deletion.sql",
     "009_university_terminology.sql",
     "010_university_media.sql",
+    "011_student_profile_details.sql",
+    "012_optional_student_marks.sql",
+    "013_student_district.sql",
   ]) {
     if (file === "009_university_terminology.sql") {
       await db.exec(`
@@ -121,6 +124,115 @@ test("migrations enforce privacy, role protection, booking workflows, and report
     );
   }
   await asUser(student);
+  await t.test(
+    "student details validate input, preserve roles and save only the current profile",
+    async () => {
+      const details = {
+        full_name: "Test Student",
+        year_passed: new Date().getFullYear(),
+        marks: "475.5",
+        cutoff: "",
+        phone: "9876543210",
+        parent_phone: "9876543211",
+        id: other,
+        role: "super_admin",
+      };
+      await assert.rejects(
+        rpc("save_student_details", [{ ...details, marks: "-1" }]),
+        /Check your name/,
+      );
+      await assert.rejects(
+        rpc("save_student_details", [{ ...details, parent_phone: "bad" }]),
+        /Check your name/,
+      );
+      await rpc("save_student_details", [{ ...details, marks: "" }]);
+      assert.equal(
+        (
+          await db.query<{ marks: number | null }>(
+            "select marks from public.profiles where id=auth.uid()",
+          )
+        ).rows[0].marks,
+        null,
+      );
+      await rpc("save_student_details", [details]);
+      const { rows } = await db.query<{
+        role: string;
+        cutoff: number | null;
+        student_profile_completed_at: string | null;
+      }>(
+        "select role,cutoff,student_profile_completed_at from public.profiles where id=auth.uid()",
+      );
+      assert.equal(rows[0].role, "student");
+      assert.equal(rows[0].cutoff, null);
+      assert.ok(rows[0].student_profile_completed_at);
+      await asUser(other);
+      assert.equal(
+        (
+          await db.query<{ student_profile_completed_at: string | null }>(
+            "select student_profile_completed_at from public.profiles where id=auth.uid()",
+          )
+        ).rows[0].student_profile_completed_at,
+        null,
+      );
+      await asUser(admin);
+      await assert.rejects(
+        rpc("save_student_details", [details]),
+        /student account/,
+      );
+      await asUser(student);
+      await rpc("save_student_details", [{ ...details, cutoff: "185.5" }]);
+      assert.equal(
+        Number(
+          (
+            await db.query<{ cutoff: string }>(
+              "select cutoff from public.profiles where id=auth.uid()",
+            )
+          ).rows[0].cutoff,
+        ),
+        185.5,
+      );
+    },
+  );
+  await t.test(
+    "district is saved privately, preserved when omitted, and can be cleared",
+    async () => {
+      const payload = {
+        full_name: "Test Student",
+        district: " Coimbatore ",
+        id: other,
+      };
+      await rpc("manage_record", ["profile", payload]);
+      const district = async () =>
+        (
+          await db.query<{ district: string }>(
+            "select district from public.profiles where id=auth.uid()",
+          )
+        ).rows[0].district;
+      assert.equal(await district(), "Coimbatore");
+      await rpc("manage_record", ["profile", { full_name: "Test Student" }]);
+      assert.equal(await district(), "Coimbatore");
+      await assert.rejects(
+        rpc("manage_record", [
+          "profile",
+          { ...payload, district: "x".repeat(101) },
+        ]),
+        /check constraint/,
+      );
+      await asUser(other);
+      assert.equal(await district(), "");
+      assert.equal(
+        (
+          await db.query("select district from public.profiles where id=$1", [
+            student,
+          ])
+        ).rows.length,
+        0,
+      );
+      await asUser(student);
+      await rpc("manage_record", ["profile", { ...payload, district: "" }]);
+      assert.equal(await district(), "");
+    },
+  );
   await t.test("signup metadata cannot assign privileges", async () => {
     const { rows } = await db.query<{ role: string }>(
       "select role from public.profiles",

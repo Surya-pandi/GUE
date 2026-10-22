@@ -248,12 +248,19 @@ summary::-webkit-details-marker {
 }
 .desktop-nav {
   display: flex;
-  gap: 27px;
-  font-size: 12px;
-  font-weight: 500;
+  align-items: center;
+  gap: 30px;
+  font-size: 14px;
+  font-weight: 600;
+}
+.desktop-nav a {
+  padding: 12px 0;
+  white-space: nowrap;
+  border-bottom: 2px solid transparent;
 }
 .desktop-nav a:hover {
   color: var(--primary);
+  border-bottom-color: var(--primary);
 }
 .header-actions {
   display: flex;
@@ -263,6 +270,136 @@ summary::-webkit-details-marker {
 }
 .mobile-menu {
   display: none;
+}
+.registration-choice {
+  max-width: 960px;
+  padding-top: 64px;
+  padding-bottom: 72px;
+}
+.registration-intro {
+  text-align: center;
+  margin-bottom: 36px;
+}
+.registration-intro > p:last-child {
+  font-size: 16px;
+}
+.registration-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+}
+.registration-option {
+  display: flex;
+  flex-direction: column;
+  padding: 32px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: #f7f9fc;
+}
+.registration-option:nth-child(2) {
+  background: #f5f8ee;
+}
+.registration-option:hover {
+  border-color: var(--primary);
+  box-shadow: 0 8px 24px #16384a12;
+}
+.registration-icon {
+  display: grid;
+  place-items: center;
+  width: 58px;
+  height: 58px;
+  margin-bottom: 24px;
+  border-radius: 16px;
+  background: white;
+  color: #16384a;
+}
+.registration-option h2 {
+  font-size: 28px;
+}
+.registration-option p {
+  line-height: 1.8;
+  margin-bottom: 28px;
+}
+.registration-option-action {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: auto;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+  color: var(--primary);
+  font-weight: 600;
+}
+.registration-login {
+  text-align: center;
+  margin-top: 30px;
+}
+@media (max-width: 600px) {
+  .registration-choice {
+    padding-top: 36px;
+    padding-bottom: 44px;
+  }
+  .registration-intro h1 {
+    font-size: 32px;
+  }
+  .registration-options {
+    grid-template-columns: 1fr;
+  }
+  .registration-option {
+    padding: 26px;
+  }
+}
+.site-header .header-login,
+.site-header .header-register {
+  min-height: 44px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  gap: 10px;
+}
+.site-header .header-login {
+  background: white;
+  color: #16384a;
+  border: 1px solid #cbd6de;
+  padding: 10px 20px;
+}
+.site-header .header-login:hover {
+  background: #f0f5f8;
+  border-color: #16384a;
+}
+.site-header .header-register {
+  background: #16384a;
+  color: white;
+  border: 1px solid #16384a;
+  padding: 7px 8px 7px 20px;
+  box-shadow: 0 4px 12px #16384a18;
+}
+.site-header .header-register > span {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #dce9a4;
+  color: #16384a;
+}
+.site-header .header-register:hover {
+  background: #24546a;
+  border-color: #24546a;
+}
+.mobile-auth-actions {
+  display: grid;
+  gap: 10px;
+  padding-top: 14px;
+  margin-top: 8px;
+  border-top: 1px solid var(--border);
+}
+.mobile-menu nav .mobile-auth-actions a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .campus-hero {
   position: relative;
@@ -1338,6 +1475,42 @@ summary::-webkit-details-marker {
 }
 .field > span {
   font-size: 11px;
+}
+.field > label {
+  font-size: 11px;
+}
+.password-input-wrap {
+  position: relative;
+}
+.password-input-wrap input {
+  width: 100%;
+  min-height: 48px;
+  padding-right: 56px;
+}
+.password-input-wrap input::-ms-reveal {
+  display: none;
+}
+.password-visibility {
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  background: #edf3f5;
+  color: #16384a;
+}
+.password-visibility:hover {
+  background: #dce9a4;
+  border-color: #b9cc7f;
+}
+.password-visibility:disabled {
+  opacity: 0.5;
+  cursor: wait;
 }
 .field input,
 .field select,

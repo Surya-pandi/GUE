@@ -1,9 +1,10 @@
 import Link from "next/link";
-import { ArrowRight, Search, Compass, Building2 } from "lucide-react";
+import { ArrowRight, Search, Compass, Building2, LogIn } from "lucide-react";
 import { config } from "@/lib/config";
 import { session } from "@/lib/auth";
 import { logoutAction } from "@/app/actions";
 import { PwaInstall } from "@/components/pwa-install";
+import { PasswordField } from "@/components/password-field";
 export function Brand() {
   return (
     <Link href="/" className="brand" aria-label={`${config.name} home`}>
@@ -29,11 +30,9 @@ export async function Header() {
       <div className="container header-inner">
         <Brand />
         <nav className="desktop-nav" aria-label="Main navigation">
-          <Link href="/universities">Explore universities</Link>
-          <Link href="/courses">Explore courses</Link>
+          <Link href="/">Home</Link>
           <Link href="/#how-it-works">How it works</Link>
-          <Link href="/for-institutions">For institutions</Link>
-          <Link href="/about">About us</Link>
+          <Link href="/about">About</Link>
         </nav>
         <div className="header-actions">
           <PwaInstall />
@@ -50,23 +49,24 @@ export async function Header() {
             </>
           ) : (
             <>
-              <Link className="login-link" href="/login">
-                Log in
+              <Link className="button header-login" href="/login">
+                <LogIn size={16} aria-hidden="true" /> Log in
               </Link>
-              <Link className="button small" href="/register/student">
-                Register <ArrowRight size={15} />
+              <Link className="button header-register" href="/register">
+                Register{" "}
+                <span>
+                  <ArrowRight size={15} aria-hidden="true" />
+                </span>
               </Link>
             </>
           )}
         </div>
         <details className="mobile-menu">
           <summary aria-label="Open navigation">Menu</summary>
-          <nav>
-            <Link href="/universities">Explore universities</Link>
-            <Link href="/courses">Explore courses</Link>
+          <nav aria-label="Mobile navigation">
+            <Link href="/">Home</Link>
             <Link href="/#how-it-works">How it works</Link>
-            <Link href="/for-institutions">For institutions</Link>
-            <Link href="/about">About us</Link>
+            <Link href="/about">About</Link>
             {s ? (
               <>
                 <Link href="/dashboard">Dashboard</Link>
@@ -77,13 +77,17 @@ export async function Header() {
                 </form>
               </>
             ) : (
-              <>
-                <Link href="/login">Log in</Link>
-                <Link href="/register/student">Register as a student</Link>
-                <Link href="/register/institution">
-                  Register your institution
+              <div className="mobile-auth-actions">
+                <Link className="button header-login" href="/login">
+                  <LogIn size={16} aria-hidden="true" /> Log in
                 </Link>
-              </>
+                <Link className="button header-register" href="/register">
+                  Register{" "}
+                  <span>
+                    <ArrowRight size={15} aria-hidden="true" />
+                  </span>
+                </Link>
+              </div>
             )}
           </nav>
         </details>
@@ -183,6 +187,7 @@ export function Field({
   placeholder,
   min,
   max,
+  autoComplete,
 }: {
   label: string;
   name: string;
@@ -192,7 +197,20 @@ export function Field({
   placeholder?: string;
   min?: string | number;
   max?: string | number;
+  autoComplete?: string;
 }) {
+  if (type === "password") {
+    return (
+      <PasswordField
+        label={label}
+        name={name}
+        required={required}
+        defaultValue={defaultValue}
+        placeholder={placeholder}
+        autoComplete={autoComplete}
+      />
+    );
+  }
   return (
     <label className="field">
       <span>
@@ -207,14 +225,8 @@ export function Field({
         placeholder={placeholder}
         min={min}
         max={max}
-        maxLength={type === "password" ? 128 : 500}
-        autoComplete={
-          type === "password"
-            ? "current-password"
-            : type === "email"
-              ? "email"
-              : undefined
-        }
+        maxLength={500}
+        autoComplete={autoComplete ?? (type === "email" ? "email" : undefined)}
       />
     </label>
   );

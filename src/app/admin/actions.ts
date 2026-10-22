@@ -54,7 +54,7 @@ export async function adminLoginAction(
 export async function adminLogoutAction() {
   const supabase = await db();
   await supabase.auth.signOut();
-  redirect("/admin/login");
+  redirect("/admin");
 }
 
 export async function adminListingAction(

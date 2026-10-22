@@ -4,6 +4,11 @@ import { configured, supabasePublicKey } from "@/lib/config";
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });
   const pathname = request.nextUrl.pathname;
+  if (pathname === "/admin/login") {
+    const url = request.nextUrl.clone();
+    url.pathname = "/admin";
+    return NextResponse.redirect(url);
+  }
   // Installation assets must work without a session or an Auth round trip.
   if (["/manifest.webmanifest", "/sw.js", "/offline.html"].includes(pathname))
     return response;
@@ -13,7 +18,8 @@ export async function proxy(request: NextRequest) {
     "/",
     "/about",
     "/login",
-    "/admin/login",
+    "/admin",
+    "/register",
     "/register/student",
     "/register/institution",
     "/forgot-password",
@@ -36,7 +42,7 @@ export async function proxy(request: NextRequest) {
     const url = request.nextUrl.clone();
     url.pathname =
       pathname === "/admin" || pathname.startsWith("/admin/")
-        ? "/admin/login"
+        ? "/admin"
         : "/login";
     url.search = "";
     url.searchParams.set(

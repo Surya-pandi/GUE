@@ -439,6 +439,9 @@ export async function Dashboard({
     check(error);
     content = (
       <div className="form-card wide">
+        <Link className="text-link" href="/student/details">
+          Edit academic details and parent’s number →
+        </Link>
         <ActionForm action={manageAction}>
           <Hidden values={{ operation: "profile" }} />
           <div className="form-grid">
@@ -458,6 +461,12 @@ export async function Dashboard({
               label="Education level (optional)"
               name="education_level"
               defaultValue={profile.education_level}
+            />
+            <Field
+              label="District (optional)"
+              name="district"
+              defaultValue={profile.district ?? ""}
+              placeholder="e.g. Coimbatore"
             />
             <Field
               label="Preferred states, separated by commas (optional)"
@@ -925,7 +934,9 @@ export async function Dashboard({
   } else if (section === "documents" || section === "gallery") {
     const documents = section === "documents";
     const { data, error } = await supabase
-      .from(documents ? "institution_verification_documents" : "university_media")
+      .from(
+        documents ? "institution_verification_documents" : "university_media",
+      )
       .select("*")
       .eq("institution_id", instId)
       .order("created_at", { ascending: false })

@@ -12,8 +12,11 @@ export function SearchInput({ suggestions = true }: { suggestions?: boolean }) {
   useEffect(() => {
     if (!suggestions || q.trim().length < 2) {
       setResults([]);
+      setLoading(false);
       return;
     }
+    setResults([]);
+    setLoading(false);
     const controller = new AbortController();
     const timer = setTimeout(async () => {
       setLoading(true);

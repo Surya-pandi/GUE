@@ -1,6 +1,6 @@
 # GLOBAL UNIVERSITY EXPO
 
-A Next.js App Router / TypeScript university discovery and counselling portal, built for Supabase PostgreSQL, Auth, and Storage. Branding is configurable. The repository contains the application, ten SQL migrations, authorization/workflow tests, and deployment configuration.
+A Next.js App Router / TypeScript university discovery and counselling portal, built for Supabase PostgreSQL, Auth, and Storage. Branding is configurable. The repository contains the application, thirteen SQL migrations, authorization/workflow tests, and deployment configuration.
 
 ## Run locally
 
@@ -17,18 +17,18 @@ Open http://localhost:3000. The landing page is public, with its video hero, edi
 The `.env.example` template contains the Supabase URL, legacy anon key, and an optional server-only service-role key. Only the URL and anon key are needed for local authentication and database access. Branding and background videos use their built-in defaults. For deployment, also set `NEXT_PUBLIC_SITE_URL` to your website's public URL so verification and password-reset links return to the correct site.
 
 1. Create a Supabase project. Set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` in `.env.local`. Existing `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` settings remain supported as a fallback. Keep `SUPABASE_SERVICE_ROLE_KEY` server-only; it is not used for login or registration.
-2. Apply `supabase/migrations/001_schema.sql` through `010_university_media.sql` in numeric order using the Supabase SQL editor, or your migration tooling against the project database. Do not apply these to a database with an incompatible existing schema.
+2. Apply `supabase/migrations/001_schema.sql` through `013_student_district.sql` in numeric order using the Supabase SQL editor, or your migration tooling against the project database. Do not apply these to a database with an incompatible existing schema.
 3. In Supabase Auth, enable email verification, configure production SMTP, set the Site URL, and allow `http://localhost:3000/auth/callback` plus your production `/auth/callback` URL. Use PKCE-compatible confirmation/recovery email templates that return to the configured redirect URL. The callback exchanges the authorization code and preserves the session cookie.
 4. Configure Auth signup/login/recovery rate limits and bot protection appropriate to your launch traffic. Auth endpoint throttling is owned by Supabase; application mutations also have database rate limits. Test the confirmation and password-recovery flow on the actual project before launch.
-5. Create the intended administrator in Supabase Authentication (or register normally) and confirm its email. Copy its User UID. Open `supabase/admin-setup.sql`, replace `REPLACE_WITH_ADMIN_USER_UUID` with that UUID, and run it in the trusted Supabase SQL editor. It checks email verification, assigns only that account the `super_admin` role, and records the change in the audit log. Do not expose this setup script as an application endpoint.
-6. Open `/admin/login` and sign in with that email and password. No shared admin password or service-role key is used for administrator login. Ordinary accounts cannot enter the admin workspace. Existing admin users can also use the normal login and open `/admin/dashboard`.
+5. Create the intended administrator in Supabase Authentication (or register normally) and confirm its email. Copy its User UID. Open `supabase/admin-setup.sql`, replace `YOUR-USER-UUID` with that UUID, and run it in the trusted Supabase SQL editor. It creates or updates only that account?s profile with the `super_admin` role. The simplified setup script does not verify email confirmation or write an audit entry. Do not expose this setup script as an application endpoint.
+6. Open `/admin` and sign in with that email and password. No shared admin password or service-role key is used for administrator login. Ordinary accounts cannot enter the admin workspace. Existing admin users can also use the normal login and open `/admin/dashboard`.
 
 Never put an admin-assignment function in browser code or grant profile-role writes to authenticated users. Signup metadata always produces a student role. An institution application can create institution ownership; owner-approved membership can create staff access, but neither can assign administrators.
 
 ## Main workflows
 
 - Public: landing page, login, student/institution registration, email callback, password recovery, privacy, and terms. The email worker independently requires its cron secret.
-- Signed-in discovery: search universities by name, location, and published course names; URL-based filters, pagination, course discovery, institution detail pages, shortlist comparison, and external maps/tours. Login and student registration preserve the requested destination. Registration with email confirmation waits for verification; when confirmation is disabled, the new authenticated session opens the requested page immediately.
+- Signed-in discovery: search universities by name, location, and published course names; URL-based filters, pagination, course discovery, institution detail pages, shortlist comparison, and external maps/tours. Login preserves the requested destination. Successful student registration opens `/student/details` to collect name, passing year, optional marks, optional cutoff, mobile number and parent phone. The registered email is displayed read-only. Email verification, when enabled, leads to the same details page. Saving opens the student dashboard; students without a completed profile are directed to details when opening their dashboard. Existing students will also need to complete these details.
 - Student: verified account, editable profile and interests, saved institutions, booking requests, cancellation/rescheduling requests, notifications, password recovery, and a reviewed account-deletion request.
 - Institution: pending application, profile/course editing, private verification uploads, campus photography and tour submissions, date-specific counselling/visit availability, booking decisions, enquiries, aggregate reports, and permission-scoped existing-account staff management.
 - Administrator: institution review and publication, private document review, explicit public-media approval, course categories, student list, booking oversight, aggregate CSV exports, audit log, and cancellation/retention settings.
@@ -113,3 +113,7 @@ Browser-based visual and live service testing require a connected browser and re
 Technical references: [Next.js App Router](https://nextjs.org/docs/app), [Supabase SSR](https://supabase.com/docs/guides/auth/server-side/creating-a-client).
 
 Database terminology: apply migration 009, then 010 to existing installations. Migration 010 renames the media table to `university_media` and preserves its data and access policies. Deploy the matching application changes together with this migration. Historical migration files retain the old names so existing databases can be upgraded.
+
+Student profile setup: apply `011_student_profile_details.sql` and `012_optional_student_marks.sql` before deploying the details page. It adds private profile fields and a student-only save function without granting direct table writes. Marks and cutoff are numeric scores (not assumed to be percentages).
+
+Apply `013_student_district.sql` to enable the optional District field in the student dashboard profile form. District is stored privately on the student profile and saved using the existing authorized profile workflow.

@@ -1,12 +1,16 @@
 import assert from "node:assert/strict";
 const base = process.env.SMOKE_BASE_URL || "http://127.0.0.1:3000";
+const internalLinks = new Set();
 const pages = [
   "/",
   "/about",
   "/privacy",
   "/terms",
   "/login",
-  "/admin/login",
+  "/login?type=student",
+  "/login?type=institution",
+  "/admin",
+  "/register",
   "/register/student",
   "/register/institution",
   "/forgot-password",
@@ -28,6 +32,11 @@ for (const path of pages) {
   assert.equal(response.status, 200, path);
   if (response.headers.get("content-type")?.includes("text/html")) {
     const html = await response.text();
+    for (const match of html.matchAll(/<a\b[^>]*\bhref="([^"]+)"/g)) {
+      const href = match[1].replaceAll("&amp;", "&");
+      if (href.startsWith("/") && !href.startsWith("//"))
+        internalLinks.add(href);
+    }
     assert.ok(html.includes("<main"), `Main landmark: ${path}`);
     assert.ok(!html.includes("Internal Server Error"), path);
     assert.ok(html.includes("GLOBAL UNIVERSITY EXPO"), `Brand name: ${path}`);
@@ -36,6 +45,11 @@ for (const path of pages) {
       `Logo: ${path}`,
     );
     if (path === "/") {
+      const header = html.match(/<header\b[\s\S]*?<\/header>/)?.[0] || "";
+      assert.ok(
+        header.includes('href="/register"'),
+        "Header offers account type selection",
+      );
       assert.ok(html.includes("Big dreams."), "Public landing hero");
       assert.ok(html.includes('id="how-it-works"'), "Public landing sections");
       assert.ok(
@@ -47,9 +61,30 @@ for (const path of pages) {
         "No university records on the signed-out landing page",
       );
     }
+    if (path === "/register") {
+      assert.ok(html.includes("Register as a student"));
+      assert.ok(html.includes("Register a university"));
+      assert.ok(html.includes('href="/register/institution"'));
+    }
   }
   console.log(`PASS ${path}`);
 }
+for (const href of internalLinks) {
+  const url = new URL(href, base);
+  const response = await fetch(url, { redirect: "manual" });
+  assert.ok(
+    [200, 307, 308].includes(response.status),
+    `Broken link: ${href} (${response.status})`,
+  );
+  if (url.hash && response.status === 200) {
+    const html = await response.text();
+    assert.ok(
+      html.includes(`id="${decodeURIComponent(url.hash.slice(1))}"`),
+      `Missing section: ${href}`,
+    );
+  }
+}
+console.log(`PASS ${internalLinks.size} internal links and section targets`);
 const manifest = await (await fetch(base + "/manifest.webmanifest")).json();
 assert.equal(manifest.display, "standalone");
 assert.equal(manifest.start_url, "/");
@@ -70,6 +105,7 @@ for (const path of [
   "/for-institutions",
   "/counselling",
   "/student/dashboard",
+  "/student/details",
   "/institution/dashboard",
   "/admin/dashboard",
   "/admin/dashboard/institutions",
@@ -87,7 +123,7 @@ for (const path of [
   const destination = new URL(response.headers.get("location"), base);
   assert.equal(
     destination.pathname,
-    path.startsWith("/admin/") ? "/admin/login" : "/login",
+    path.startsWith("/admin/") ? "/admin" : "/login",
   );
   assert.equal(destination.searchParams.get("next"), path);
   assert.equal(response.headers.get("cache-control"), "private, no-store");
@@ -125,8 +161,8 @@ const registration = await (
   )
 ).text();
 assert.ok(
-  registration.includes(encodeURIComponent(destination)),
-  "Registration retains the destination in login link",
+  registration.includes('name="next" value="/student/details"'),
+  "Student registration goes to profile details even with a discovery destination",
 );
 const callback = await fetch(base + "/auth/callback", { redirect: "manual" });
 assert.equal(

@@ -21,11 +21,8 @@ export default async function Register({
   const institution = type === "institution";
   const next = institution
     ? "/register/institution?step=application"
-    : safeRedirect(scalar(await searchParams, "next"), "/");
-  if (s && !institution)
-    redirect(
-      next.startsWith("/register/") || next.startsWith("/login") ? "/" : next,
-    );
+    : "/student/details";
+  if (s && !institution) redirect("/dashboard");
   return (
     <div className="container">
       <div className={`form-card ${institution && s ? "wide" : ""}`}>
@@ -34,14 +31,26 @@ export default async function Register({
         </p>
         <h1>
           {institution
-            ? "Bring your institution closer."
-            : "Make room for possibilities."}
+            ? s
+              ? "Submit your university"
+              : "Create your university account"
+            : "Create your student account"}
         </h1>
         <p>
           {institution
-            ? "Create an account, submit your institution, and complete verification before your profile becomes public."
+            ? "Create your representative account, submit your university, and complete verification before your profile becomes public."
             : "Register to access GLOBAL UNIVERSITY EXPO, explore universities, save your shortlist, and plan a campus visit."}
         </p>
+        {!s && (
+          <p className="form-note">
+            <Link
+              className="text-link"
+              href={`/register?next=${encodeURIComponent(safeRedirect(scalar(await searchParams, "next"), "/"))}`}
+            >
+              Change account type
+            </Link>
+          </p>
+        )}
         {!configured && (
           <p className="alert">
             Registration will open once account services are connected.
@@ -94,7 +103,11 @@ export default async function Register({
         ) : (
           <ActionForm
             action={registerAction}
-            submit="Create account"
+            submit={
+              institution
+                ? "Create university account"
+                : "Create student account"
+            }
             disabled={!configured}
           >
             <input type="hidden" name="account_type" value={type} />
@@ -105,9 +118,10 @@ export default async function Register({
             <Field label="Full name" name="full_name" required />
             <Field label="Email address" name="email" type="email" required />
             <Field
-              label="Password · at least 12 characters"
+              label="Password"
               name="password"
               type="password"
+              autoComplete="new-password"
               required
             />
             <label className="check">
@@ -129,7 +143,7 @@ export default async function Register({
         )}
         <div className="auth-links">
           <span>Already have an account?</span>
-          <Link href={`/login?next=${encodeURIComponent(next)}`}>
+          <Link href={`/login?type=${type}&next=${encodeURIComponent(next)}`}>
             Log in <span aria-hidden="true">→</span>
           </Link>
         </div>

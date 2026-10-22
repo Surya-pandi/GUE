@@ -38,7 +38,7 @@ export async function loginAction(
     const supabase = await db();
     const { error } = await supabase.auth.signInWithPassword({
       email: email.parse(text(f, "email")),
-      password: text(f, "password"),
+      password: String(f.get("password") || ""),
     });
     if (error)
       return {
@@ -55,7 +55,7 @@ export async function registerAction(
   _: ActionState,
   f: FormData,
 ): Promise<ActionState> {
-  let destination = "/";
+  let destination = "/student/details";
   try {
     if (text(f, "website")) return { error: "Unable to submit this form." };
     if (text(f, "consent") !== "on")
@@ -65,10 +65,10 @@ export async function registerAction(
     const next =
       text(f, "account_type") === "institution"
         ? "/register/institution?step=application"
-        : safeRedirect(text(f, "next"), "/");
+        : "/student/details";
     const { data, error } = await supabase.auth.signUp({
       email: email.parse(text(f, "email")),
-      password: password.parse(text(f, "password")),
+      password: password.parse(String(f.get("password") || "")),
       options: {
         data: { full_name: fullName },
         emailRedirectTo: `${config.url}/auth/callback?next=${encodeURIComponent(next)}`,
@@ -78,7 +78,9 @@ export async function registerAction(
     if (!data.session)
       return {
         success:
-          "Check your email to verify your account and access the portal. You can then log in here with your email and password.",
+          next === "/student/details"
+            ? "Check your email to verify your account. After verification, you’ll complete your student profile."
+            : "Check your email to verify your account. After verification, you’ll continue to your university application.",
       };
     destination = next;
   } catch (e) {
@@ -86,6 +88,32 @@ export async function registerAction(
   }
   redirect(destination);
 }
+export async function saveStudentDetailsAction(
+  _: ActionState,
+  f: FormData,
+): Promise<ActionState> {
+  const { supabase } = await requireUser(["student"]);
+  try {
+    const { error } = await supabase.rpc("save_student_details", {
+      payload: Object.fromEntries(
+        [
+          "full_name",
+          "year_passed",
+          "marks",
+          "cutoff",
+          "phone",
+          "parent_phone",
+        ].map((key) => [key, text(f, key)]),
+      ),
+    });
+    check(error);
+  } catch (e) {
+    return failure(e);
+  }
+  revalidatePath("/", "layout");
+  redirect("/student/dashboard");
+}
+
 export async function forgotAction(
   _: ActionState,
   f: FormData,
@@ -112,7 +140,7 @@ export async function resetAction(
   const { supabase } = await requireUser();
   try {
     const { error } = await supabase.auth.updateUser({
-      password: password.parse(text(f, "password")),
+      password: password.parse(String(f.get("password") || "")),
     });
     check(error);
     return { success: "Password updated. You can return to your dashboard." };
@@ -185,6 +213,12 @@ export async function manageAction(
       if (payload[key]) uuid.parse(payload[key]);
     if (operation === "profile") {
       z.string().min(2).max(120).parse(payload.full_name);
+      if (f.has("district")) {
+        payload.district = z
+          .string()
+          .max(100, "District must be 100 characters or fewer.")
+          .parse(text(f, "district"));
+      }
       payload.email_notifications = text(f, "email_notifications") === "on";
       payload.preferred_streams = f.getAll("preferred_streams");
       payload.preferred_states = text(f, "preferred_states")

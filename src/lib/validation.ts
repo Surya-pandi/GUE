@@ -3,7 +3,7 @@ export const uuid = z.string().uuid();
 export const email = z.email().max(254);
 export const password = z
   .string()
-  .min(12, "Use at least 12 characters.")
+  .min(1, "Enter a password.")
   .max(128);
 export function safeRedirect(
   value: string | null | undefined,

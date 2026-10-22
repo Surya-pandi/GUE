@@ -23,7 +23,7 @@ export async function requireUser(roles?: string[]) {
   if (!s)
     redirect(
       roles?.length === 1 && roles[0] === "super_admin"
-        ? "/admin/login"
+        ? "/admin"
         : "/login",
     );
   if (roles && !roles.includes(s.profile.role)) redirect("/dashboard");

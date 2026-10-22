@@ -9,12 +9,13 @@ export default async function Reset() {
     <div className="container">
       <div className="form-card">
         <h1>Choose a new password.</h1>
-        <p>Use at least 12 characters.</p>
+        <p>Enter the password you would like to use.</p>
         <ActionForm action={resetAction} submit="Update password">
           <Field
             label="New password"
             name="password"
             type="password"
+            autoComplete="new-password"
             required
           />
         </ActionForm>
