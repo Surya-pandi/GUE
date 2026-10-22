@@ -234,6 +234,238 @@ summary::-webkit-details-marker {
   margin-top: 6px;
   color: #64738a;
 }
+.guide-page {
+  padding-top: 48px;
+  padding-bottom: 72px;
+}
+.guide-hero {
+  padding: 64px 48px 0;
+  border-radius: 24px;
+  background: #f2f5ec;
+  text-align: center;
+  overflow: hidden;
+}
+.guide-hero h1 {
+  font-size: clamp(38px, 5vw, 64px);
+  line-height: 1.1;
+  color: #163c3b;
+}
+.guide-hero h1 em,
+.home-direction h2 em {
+  font-family: Georgia, serif;
+  font-weight: 400;
+  color: #406651;
+}
+.guide-hero > p:not(.eyebrow) {
+  font-size: 16px;
+  margin: 24px 0;
+  line-height: 1.8;
+}
+.guide-hero > .text-link {
+  display: inline-flex;
+  gap: 12px;
+  align-items: center;
+}
+.guide-chapters {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+  margin-top: 48px;
+  padding: 24px 0;
+  border-top: 1px solid #d9dfd0;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  color: #365749;
+}
+.guide-steps {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+  padding-top: 48px;
+  scroll-margin-top: 30px;
+}
+.guide-step {
+  display: flex;
+  gap: 24px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 32px;
+}
+.guide-number {
+  color: #b5c6ba;
+  font-size: 34px;
+  font-family: Georgia, serif;
+}
+.guide-step-body > svg {
+  color: #2f6654;
+  margin: 8px 0 18px;
+}
+.guide-step h2 {
+  font-size: 25px;
+}
+.guide-step p {
+  line-height: 1.85;
+  margin: 16px 0 24px;
+}
+.guide-note {
+  display: flex;
+  gap: 9px;
+  align-items: flex-start;
+  color: #365d4b;
+  font-size: 12px;
+}
+.guide-note svg {
+  margin-top: 2px;
+}
+.guide-expectations {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+  padding: 56px 0 0;
+}
+.guide-expectations p {
+  line-height: 1.85;
+}
+.guide-expectations h3:not(:first-child) {
+  margin-top: 24px;
+}
+.home-direction {
+  padding-top: 80px;
+  padding-bottom: 80px;
+}
+.home-direction-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 36px;
+}
+.home-direction-heading h2 {
+  font-size: clamp(30px, 3.2vw, 44px);
+  line-height: 1.17;
+}
+.home-direction-heading > a {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  white-space: nowrap;
+}
+.home-direction-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 22px;
+}
+.direction-card {
+  display: flex;
+  flex-direction: column;
+  padding: 32px;
+  border: 1px solid #dce4dd;
+  border-radius: 20px;
+  background: #f4f6ee;
+}
+.direction-card:nth-child(2) {
+  background: #f1f5fa;
+  border-color: #dce3ee;
+}
+.direction-card:nth-child(3) {
+  background: #163c3b;
+  color: #d1e0d9;
+  border-color: #163c3b;
+}
+.direction-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  color: #365d4b;
+  margin-bottom: 40px;
+}
+.direction-top > span {
+  font-size: 10px;
+  letter-spacing: 0.12em;
+}
+.direction-card h3 {
+  font-size: 28px;
+}
+.direction-card:nth-child(3) h3,
+.direction-card:nth-child(3) .direction-top,
+.direction-card:nth-child(3) .direction-link {
+  color: #e0eab3;
+}
+.direction-card p {
+  line-height: 1.85;
+  margin-bottom: 30px;
+}
+.direction-link {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  border-top: 1px solid #82978a40;
+  padding-top: 20px;
+  margin-top: auto;
+  font-size: 13px;
+  font-weight: 600;
+  color: #163c3b;
+}
+.direction-card:hover .direction-link {
+  text-decoration: underline;
+}
+.home-principles {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 18px 36px;
+  margin-top: 28px;
+  color: #526b60;
+  font-size: 12px;
+}
+.home-principles span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+@media (max-width: 850px) {
+  .home-direction-grid {
+    grid-template-columns: 1fr;
+  }
+  .direction-top {
+    margin-bottom: 24px;
+  }
+  .home-direction-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .guide-step {
+    padding: 24px;
+    gap: 16px;
+  }
+}
+@media (max-width: 600px) {
+  .guide-page {
+    padding-top: 24px;
+  }
+  .guide-hero {
+    padding: 36px 22px 0;
+  }
+  .guide-chapters {
+    grid-template-columns: 1fr 1fr;
+    text-align: left;
+  }
+  .guide-steps,
+  .guide-expectations {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  .home-direction {
+    padding-top: 48px;
+    padding-bottom: 48px;
+  }
+  .home-principles {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
 .site-header {
   height: 87px;
   background: white;

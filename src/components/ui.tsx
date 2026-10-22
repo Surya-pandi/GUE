@@ -31,7 +31,7 @@ export async function Header() {
         <Brand />
         <nav className="desktop-nav" aria-label="Main navigation">
           <Link href="/">Home</Link>
-          <Link href="/#how-it-works">How it works</Link>
+          <Link href="/how-it-works">How it works</Link>
           <Link href="/about">About</Link>
         </nav>
         <div className="header-actions">
@@ -65,7 +65,7 @@ export async function Header() {
           <summary aria-label="Open navigation">Menu</summary>
           <nav aria-label="Mobile navigation">
             <Link href="/">Home</Link>
-            <Link href="/#how-it-works">How it works</Link>
+            <Link href="/how-it-works">How it works</Link>
             <Link href="/about">About</Link>
             {s ? (
               <>
@@ -117,11 +117,9 @@ export function Footer() {
           <Link href="/contact">Contact us</Link>
         </div>
         <div>
-          <strong>Your next step</strong>
-          <Link href="/register/student">
-            Create a student account <ArrowRight size={14} />
-          </Link>
-          <Link href="/register/institution">Register your institution</Link>
+          <strong>Plan your journey</strong>
+          <Link href="/how-it-works">How it works</Link>
+          <Link href="/courses">Find your study path</Link>
           {config.email && (
             <a href={`mailto:${config.email}`}>{config.email}</a>
           )}

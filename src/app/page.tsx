@@ -80,7 +80,7 @@ export default async function Home() {
             </p>
             <Link
               className="future-cta"
-              href={s ? "/universities" : "/register/student?next=/universities"}
+              href={s ? "/universities" : "/register"}
             >
               {s ? "Explore your possibilities" : "Start your journey"}{" "}
               <ArrowUpRight size={20} />
@@ -88,7 +88,7 @@ export default async function Home() {
             <span className="future-note">
               {s
                 ? "Make your next move with confidence."
-                : "Create an account to unlock university discovery."}
+                : "Find the right direction for your next chapter."}
             </span>
           </div>
           <div className="future-orbit" aria-hidden="true">
@@ -214,16 +214,8 @@ export default async function Home() {
                 <p>
                   {s
                     ? "We’re preparing our institution directory. Verified university profiles, published course details, and campus photographs will appear here as institutions join."
-                    : "Register or log in to explore university profiles, compare courses, and connect with admissions teams."}
+                    : "Explore what matters: courses, campus life, and conversations with admissions teams. Bring your questions and build a shortlist around your goals."}
                 </p>
-                {!s && (
-                  <Link className="button" href="/login?next=/universities">
-                    Log in to explore universities <ArrowRight size={17} />
-                  </Link>
-                )}
-                <Link className="text-link" href="/register/student">
-                  Start your student account <ArrowRight size={17} />
-                </Link>
               </div>
               <div className="directory-checklist">
                 <p>
@@ -238,60 +230,79 @@ export default async function Home() {
                   <span>03</span> Direct conversations with admissions teams{" "}
                   <Check size={17} />
                 </p>
-                <Link href="/register/institution">
-                  Represent a university? Join the directory{" "}
-                  <ArrowUpRight size={16} />
-                </Link>
               </div>
             </div>
           )}
         </div>
       </section>
-      <section className="container section journey" id="how-it-works">
-        <div className="journey-intro">
-          <p className="eyebrow">LESS GUESSWORK. MORE CLARITY.</p>
-          <h2>
-            A big decision.
-            <br />A few simple steps.
-          </h2>
-          <p>
-            You don’t have to have it all figured out. Start with what interests
-            you, and take it one conversation at a time.
-          </p>
-          <Link className="text-link" href="/counselling">
-            How counselling works <ArrowRight size={17} />
+      <section className="container home-direction" id="how-it-works">
+        <div className="home-direction-heading">
+          <div>
+            <p className="eyebrow">A LITTLE DIRECTION GOES A LONG WAY</p>
+            <h2>
+              You bring the ambition.
+              <br />
+              <em>Find your direction here.</em>
+            </h2>
+          </div>
+          <Link className="text-link" href="/how-it-works">
+            See how it works <ArrowUpRight size={19} />
           </Link>
         </div>
-        <div className="steps">
-          {[
-            [
-              Compass,
-              "Find your possibilities",
-              "Explore universities by course, location, fees, and the things that matter to you.",
-            ],
-            [
-              Video,
-              "Have a real conversation",
-              "Choose an available session and bring your questions to an admissions representative.",
-            ],
-            [
-              Building2,
-              "Picture yourself there",
-              "Request a campus visit, explore the surroundings, and make a more informed choice.",
-            ],
-          ].map(([Icon, title, body], i) => {
-            const I = Icon as typeof Compass;
-            return (
-              <div className="step" key={String(title)}>
-                <span className="step-number">0{i + 1}</span>
-                <I size={25} strokeWidth={1.5} />
-                <div>
-                  <h3>{String(title)}</h3>
-                  <p>{String(body)}</p>
-                </div>
-              </div>
-            );
-          })}
+        <div className="home-direction-grid">
+          <Link href="/courses" className="direction-card">
+            <span className="direction-top">
+              <Compass size={25} />
+              <span>01 / DISCOVER</span>
+            </span>
+            <h3>What moves you?</h3>
+            <p>
+              Start with a subject you love. Find the courses that turn
+              curiosity into possibility.
+            </p>
+            <span className="direction-link">
+              Find your study path <ArrowUpRight size={20} />
+            </span>
+          </Link>
+          <Link href="/compare" className="direction-card">
+            <span className="direction-top">
+              <Building2 size={25} />
+              <span>02 / CONSIDER</span>
+            </span>
+            <h3>What feels right?</h3>
+            <p>
+              Look beyond the name. Compare locations, published fees, and the
+              details that matter.
+            </p>
+            <span className="direction-link">
+              Compare your options <ArrowUpRight size={20} />
+            </span>
+          </Link>
+          <Link href="/how-it-works#student-journey" className="direction-card">
+            <span className="direction-top">
+              <Video size={25} />
+              <span>03 / CONNECT</span>
+            </span>
+            <h3>What comes next?</h3>
+            <p>
+              Ask the questions on your mind. Learn how to arrange a
+              conversation or a campus visit.
+            </p>
+            <span className="direction-link">
+              Plan your next step <ArrowUpRight size={20} />
+            </span>
+          </Link>
+        </div>
+        <div className="home-principles">
+          <span>
+            <Check size={16} /> Your interests first
+          </span>
+          <span>
+            <Check size={16} /> Published course information
+          </span>
+          <span>
+            <Check size={16} /> Conversations with university teams
+          </span>
         </div>
       </section>
       <section className="container campus-story">

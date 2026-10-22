@@ -17,6 +17,7 @@ export async function proxy(request: NextRequest) {
   const publicPage = [
     "/",
     "/about",
+    "/how-it-works",
     "/login",
     "/admin",
     "/register",

@@ -6,6 +6,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   return [
     "",
     "/about",
+    "/how-it-works",
     "/login",
     "/register",
     "/register/student",

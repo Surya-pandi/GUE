@@ -4,6 +4,7 @@ const internalLinks = new Set();
 const pages = [
   "/",
   "/about",
+  "/how-it-works",
   "/privacy",
   "/terms",
   "/login",
@@ -53,8 +54,8 @@ for (const path of pages) {
       assert.ok(html.includes("Big dreams."), "Public landing hero");
       assert.ok(html.includes('id="how-it-works"'), "Public landing sections");
       assert.ok(
-        html.includes("Log in to explore universities"),
-        "University access requires login",
+        !html.includes("Log in to explore universities"),
+        "Landing page avoids repeated login prompts",
       );
       assert.ok(
         !html.includes('class="university-card"'),
