@@ -6,7 +6,10 @@ export function UniversityCard({ university }: { university: Institution }) {
   const image = mediaUrl(university.cover_image_path);
   return (
     <article className="university-card">
-      <Link href={`/universities/${university.slug}`} className="university-cover">
+      <Link
+        href={`/universities/${university.slug}`}
+        className="university-cover"
+      >
         {image ? (
           <img src={image} alt={`${university.name} campus`} loading="lazy" />
         ) : (
@@ -28,7 +31,7 @@ export function UniversityCard({ university }: { university: Institution }) {
           </Link>
         </h3>
         <span className="verified">
-          <BadgeCheck size={14} /> Institution verified
+          <BadgeCheck size={14} /> University profile
         </span>
         <p>
           {university.courses

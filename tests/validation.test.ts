@@ -4,6 +4,7 @@ import {
   safeRedirect,
   safeExternal,
   meetingHosts,
+  tourHosts,
   csvCell,
 } from "../src/lib/validation";
 test("redirects reject external, protocol-relative and backslash URLs", () => {
@@ -37,4 +38,17 @@ test("CSV quotes data and neutralizes spreadsheet formulas", () => {
   assert.equal(csvCell('a"b'), '"a""b"');
   assert.equal(csvCell(" normal"), '" normal"');
   assert.equal(csvCell("\t+2"), '"\'\t+2"');
+});
+
+test("tour links accept Maps short links but reject lookalike domains and unsafe URLs", () => {
+  assert.equal(
+    safeExternal("https://maps.app.goo.gl/example", tourHosts),
+    "https://maps.app.goo.gl/example",
+  );
+  for (const url of [
+    "http://maps.app.goo.gl/example",
+    "https://maps.app.goo.gl.evil.test/example",
+    "https://maps.app.goo.gl@evil.test/example",
+  ])
+    assert.equal(safeExternal(url, tourHosts), null);
 });

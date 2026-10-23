@@ -1,7 +1,8 @@
+import { CourseFields } from "@/components/course-fields";
 import { ActionForm } from "@/components/action-form";
 import { manageAction } from "@/app/actions";
 import { Course } from "@/lib/data";
-import { Field, Select, Textarea } from "@/components/ui";
+import { Textarea } from "@/components/ui";
 export function CourseEditor({
   course,
   institutionId,
@@ -13,55 +14,28 @@ export function CourseEditor({
 }) {
   return (
     <div className="record">
-      <h3>{course.name}</h3>
+      <h3>
+        {course.degree_type ? `${course.degree_type} - ` : ""}
+        {course.name}
+      </h3>
       <p>
         {course.stream} · {course.duration} ·{" "}
-        {course.is_published ? "Published" : "Pending review"}
+        {course.is_published ? "Available on published profile" : "Draft"}
       </p>
       <details>
         <summary>Edit course</summary>
-        <ActionForm action={manageAction} submit="Save course for review">
+        <ActionForm action={manageAction} submit="Save course">
           <input type="hidden" name="operation" value="course" />
           <input type="hidden" name="institution_id" value={institutionId} />
           <input type="hidden" name="id" value={course.id} />
-          <div className="form-grid">
-            <Field
-              label="Course name"
-              name="name"
-              defaultValue={course.name}
-              required
-            />
-            <Select
-              label="Stream"
-              name="stream"
-              options={categories}
-              defaultValue={course.stream}
-            />
-            <Field
-              label="Degree type"
-              name="degree_type"
-              defaultValue={course.degree_type}
-            />
-            <Field
-              label="Duration"
-              name="duration"
-              defaultValue={course.duration}
-            />
-            <Field
-              label="Published fee (INR)"
-              name="published_fee_amount"
-              type="number"
-              min={0}
-              defaultValue={course.published_fee_amount ?? ""}
-            />
-          </div>
+          <CourseFields course={course} categories={categories} />
           <Textarea
             label="Eligibility"
             name="eligibility"
             defaultValue={course.eligibility}
           />
           <Textarea
-            label="Description and fee period"
+            label="Additional course details"
             name="description"
             defaultValue={course.description}
           />
@@ -69,10 +43,7 @@ export function CourseEditor({
       </details>
       <details>
         <summary>Remove this course</summary>
-        <p>
-          This removes the published course and submits the institution for
-          review.
-        </p>
+        <p>This removes the course from the university profile.</p>
         <ActionForm action={manageAction} submit="Remove course">
           <input type="hidden" name="operation" value="course" />
           <input type="hidden" name="institution_id" value={institutionId} />

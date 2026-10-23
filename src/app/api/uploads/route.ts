@@ -2,6 +2,12 @@ import { NextResponse } from "next/server";
 import { session } from "@/lib/auth";
 import { uuid } from "@/lib/validation";
 import { config } from "@/lib/config";
+import {
+  mediaCategories,
+  universitySteps,
+  availableSetupStep,
+  type UniversitySetup,
+} from "@/lib/university-setup";
 export async function POST(request: Request) {
   if (request.headers.get("origin") !== new URL(config.url).origin)
     return NextResponse.json({ error: "Invalid origin." }, { status: 403 });
@@ -14,6 +20,12 @@ export async function POST(request: Request) {
     const form = await request.formData();
     const institution = uuid.parse(form.get("institution_id"));
     const kind = String(form.get("kind"));
+    const category = String(form.get("category") || "campus");
+    if (
+      kind === "media" &&
+      !mediaCategories.some((item) => item.value === category)
+    )
+      throw new Error("Choose a valid gallery category.");
     const label = String(form.get("label") || "");
     const file = form.get("file");
     if (
@@ -85,18 +97,52 @@ export async function POST(request: Request) {
       .from("institution-private-documents")
       .upload(path, bytes, { contentType: file.type, upsert: false });
     if (error) throw new Error("File upload failed. Please try again.");
-    const { error: recordError } = await s.supabase.rpc("record_upload", {
-      institution,
-      path,
-      kind,
-      label,
-    });
+    const { error: recordError } = await s.supabase.rpc(
+      "record_categorized_upload",
+      {
+        institution,
+        path,
+        kind,
+        label,
+        category,
+      },
+    );
     if (recordError)
-      throw new Error(
-        "The file was received but could not be registered. Contact the platform team before retrying.",
+      return NextResponse.json(
+        {
+          error:
+            "The file was received but could not be registered. Contact the platform team before retrying.",
+          retryable: false,
+        },
+        { status: 400 },
       );
+    let nextPath: string | undefined;
+    if (form.get("continue_setup") === "true") {
+      const { data: progress, error: progressError } = await s.supabase.rpc(
+        "university_setup_status",
+        { institution },
+      );
+      if (!progressError && progress) {
+        const status = progress as UniversitySetup;
+        if (universitySteps.every((step) => status[step.path])) {
+          const { error: finishError } = await s.supabase.rpc(
+            "complete_university_setup_step",
+            { institution, step: "finish" },
+          );
+          if (!finishError)
+            nextPath = `/institution/dashboard?institution=${institution}&setup=complete`;
+        } else {
+          const nextStep = universitySteps[availableSetupStep(status)].path;
+          nextPath = `/institution/dashboard/${nextStep}?institution=${institution}`;
+        }
+      }
+    }
     return NextResponse.json({
-      message: "Uploaded securely. This file is awaiting review.",
+      nextPath,
+      message:
+        kind === "media"
+          ? "Photo uploaded successfully. No photo approval is required; it appears when your university is published."
+          : "Document uploaded securely.",
     });
   } catch (e) {
     return NextResponse.json(

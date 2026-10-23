@@ -1,9 +1,11 @@
+import { courseFeeSummary } from "@/lib/course-fees";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { institution, mediaUrl, money } from "@/lib/data";
+import { institution, mediaUrl } from "@/lib/data";
 import { db } from "@/lib/supabase/server";
 import { PageTitle } from "@/components/ui";
-import { CompareButton, Gallery } from "@/components/interactive";
+import { CompareButton } from "@/components/interactive";
+import { CategorizedGallery } from "@/components/categorized-gallery";
 import { ActionForm } from "@/components/action-form";
 import { manageAction } from "@/app/actions";
 import { safeExternal, tourHosts } from "@/lib/validation";
@@ -72,17 +74,18 @@ export default async function University({
           title={c.name}
         >
           <span className="tag">{c.institution_type}</span>{" "}
-          <span className="verified">Institution reviewed and approved</span>
+          <span className="verified">University profile</span>
         </PageTitle>
         <CompareButton id={c.id} />
       </div>
       <div className="profile-layout">
         <div>
           {media?.length ? (
-            <Gallery
+            <CategorizedGallery
               images={media.map((m) => ({
                 src: mediaUrl(m.storage_path)!,
                 alt: m.alt_text,
+                category: m.media_category,
               }))}
             />
           ) : (
@@ -108,7 +111,7 @@ export default async function University({
                     <tr>
                       <th>Program</th>
                       <th>Eligibility & duration</th>
-                      <th>Published fee</th>
+                      <th>Fee structure</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -116,6 +119,9 @@ export default async function University({
                       <tr key={course.id}>
                         <td>
                           <strong>{course.name}</strong>
+                          {course.degree_type && (
+                            <div>{course.degree_type}</div>
+                          )}
                           <br />
                           {course.stream}
                         </td>
@@ -124,7 +130,7 @@ export default async function University({
                           <br />
                           {course.duration || "Duration not published"}
                         </td>
-                        <td>{money(course.published_fee_amount)}</td>
+                        <td>{courseFeeSummary(course)}</td>
                       </tr>
                     ))}
                   </tbody>

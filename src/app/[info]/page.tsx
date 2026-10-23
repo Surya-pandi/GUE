@@ -65,13 +65,13 @@ export default async function Info({
             })}
           </div>
           <div className="prose">
-            <h2>Start with a verified profile</h2>
+            <h2>Build your university profile</h2>
             <p>
               Register an account, submit official institution details, and
-              provide supporting verification documents. An administrator
-              reviews your application before public publication. You can manage
-              courses, availability, enquiries, and staff access from your
-              dashboard.
+              complete your profile with courses and campus photos. An
+              administrator reviews your application before public publication.
+              You can manage courses, availability, enquiries, and staff access
+              from your dashboard.
             </p>
             <Link href="/register/institution" className="button">
               Register your institution →

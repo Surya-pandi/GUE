@@ -1,6 +1,6 @@
 # GLOBAL UNIVERSITY EXPO
 
-A Next.js App Router / TypeScript university discovery and counselling portal, built for Supabase PostgreSQL, Auth, and Storage. Branding is configurable. The repository contains the application, thirteen SQL migrations, authorization/workflow tests, and deployment configuration.
+A Next.js App Router / TypeScript university discovery and counselling portal, built for Supabase PostgreSQL, Auth, and Storage. Branding is configurable. The repository contains the application, twenty-one SQL migrations, authorization/workflow tests, and deployment configuration.
 
 ## Run locally
 
@@ -17,7 +17,7 @@ Open http://localhost:3000. The landing page is public, with its video hero, edi
 The `.env.example` template contains the Supabase URL, legacy anon key, and an optional server-only service-role key. Only the URL and anon key are needed for local authentication and database access. Branding and background videos use their built-in defaults. For deployment, also set `NEXT_PUBLIC_SITE_URL` to your website's public URL so verification and password-reset links return to the correct site.
 
 1. Create a Supabase project. Set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` in `.env.local`. Existing `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` settings remain supported as a fallback. Keep `SUPABASE_SERVICE_ROLE_KEY` server-only; it is not used for login or registration.
-2. Apply `supabase/migrations/001_schema.sql` through `013_student_district.sql` in numeric order using the Supabase SQL editor, or your migration tooling against the project database. Do not apply these to a database with an incompatible existing schema.
+2. Apply `supabase/migrations/001_schema.sql` through `021_automatic_university_publication.sql` in numeric order using the Supabase SQL editor, or your migration tooling against the project database. Do not apply these to a database with an incompatible existing schema.
 3. In Supabase Auth, enable email verification, configure production SMTP, set the Site URL, and allow `http://localhost:3000/auth/callback` plus your production `/auth/callback` URL. Use PKCE-compatible confirmation/recovery email templates that return to the configured redirect URL. The callback exchanges the authorization code and preserves the session cookie.
 4. Configure Auth signup/login/recovery rate limits and bot protection appropriate to your launch traffic. Auth endpoint throttling is owned by Supabase; application mutations also have database rate limits. Test the confirmation and password-recovery flow on the actual project before launch.
 5. Create the intended administrator in Supabase Authentication (or register normally) and confirm its email. Copy its User UID. Open `supabase/admin-setup.sql`, replace `YOUR-USER-UUID` with that UUID, and run it in the trusted Supabase SQL editor. It creates or updates only that account?s profile with the `super_admin` role. The simplified setup script does not verify email confirmation or write an audit entry. Do not expose this setup script as an application endpoint.
@@ -33,7 +33,7 @@ Never put an admin-assignment function in browser code or grant profile-role wri
 - Institution: pending application, profile/course editing, private verification uploads, campus photography and tour submissions, date-specific counselling/visit availability, booking decisions, enquiries, aggregate reports, and permission-scoped existing-account staff management.
 - Administrator: institution review and publication, private document review, explicit public-media approval, course categories, student list, booking oversight, aggregate CSV exports, audit log, and cancellation/retention settings.
 
-Institution profile/course changes return the profile to pending review. Approved public photos remain public assets; never upload confidential content for public-media approval. Verification documents stay in a private bucket and are retrieved with short-lived signed download URLs. The media and document permissions are distinct. Owners may manage their institution; staff receive only explicitly assigned permissions.
+Completed university profiles and their course changes publish automatically. Photos are enabled automatically and appear when their university is published; upload only images intended for students. Verification documents stay in a private bucket and are retrieved with short-lived signed download URLs. The media and document permissions are distinct. Owners may manage their institution; staff receive only explicitly assigned permissions.
 
 All application table writes go through a narrow set of authorization-checking SQL functions. Users cannot write roles, verification status, booking status, meeting URLs, or audit logs directly. RLS limits reads, including private reviews and each student's records. The web application uses the user's Supabase session, not a service-role bypass. Only the email worker uses the server-only service-role key.
 
@@ -117,3 +117,29 @@ Database terminology: apply migration 009, then 010 to existing installations. M
 Student profile setup: apply `011_student_profile_details.sql` and `012_optional_student_marks.sql` before deploying the details page. It adds private profile fields and a student-only save function without granting direct table writes. Marks and cutoff are numeric scores (not assumed to be percentages).
 
 Apply `013_student_district.sql` to enable the optional District field in the student dashboard profile form. District is stored privately on the student profile and saved using the existing authorized profile workflow.
+
+## University profile setup
+
+Apply migrations through `021_automatic_university_publication.sql`. University setup now follows Profile -> Courses -> Gallery. Saving a profile advances to courses, saving programmes advances to gallery, and uploading the final required gallery photo finishes setup when the profile and courses are complete. Earlier sections remain accessible. Existing approved universities retain access.
+
+Setup requires a saved university name, overview, city, state, address, phone, at least one course, and at least three photos in each of Campus, Hostel, Infrastructure, Labs, Library, Sports, and Other. Verification documents are no longer requested or required. Existing uploaded documents remain private and available to administrators; no records or files are deleted. Publication happens automatically after setup is complete.
+
+## Course selections and quota fees
+
+Apply `015_course_catalog_and_fees.sql` after migration 014 before using the new course forms. Common programmes across 19 streams and degree selections include custom entries for unlisted programmes. Counselling and management quota fees each accept an optional From/To pair in INR, with a shared fee period (per year, per semester, or entire course). Fixed fees use equal bounds. Both application and database validate ranges. Existing fees remain available without guessing their quota. New ranges appear on university profiles, course discovery, comparison, and administrator review; the lowest supplied fee is used by the existing budget filter. University profiles publish automatically after setup; courses and photos need no approval.
+
+## Multiple programme availability
+
+Apply `016_course_selection.sql` after migration 015. Universities select multiple streams and multiple degrees per stream using checkboxes. A course checkbox selects that course for all checked degrees; individual degree checkboxes allow exceptions. Select-all applies only to displayed courses and selected degrees. Unchecked streams/degrees are excluded from the submission without deleting saved programmes. Search narrows the course list. Only explicitly selected course/degree combinations are saved. Each programme has its own optional duration, eligibility, description, and counselling/management fee ranges in the review section. Shared duration and fee ranges can be explicitly applied to all selected programmes or one stream/degree group; blank shared fields leave existing details unchanged, and each programme can still be edited individually. Unlisted courses and degrees can be added as custom options. Existing programmes are labelled already added; edit their details in the existing course list. A selection of up to 100 programmes is saved in one transaction, preserving existing programmes and preventing duplicate selections. During setup, saving advances to the gallery as before.
+
+Gallery upload forms accept up to 20 images per batch in each category (JPEG/PNG/WebP, 5 MB per image). Each file has an editable description and a separate upload result. Requests run sequentially; successful files are excluded from retries, and uncertain network/storage-registration failures require checking the gallery or contacting support before resubmission. Setup navigation waits for a fully successful batch. Existing server quotas and university publication permissions still apply.
+
+Apply `018_gallery_minimum_photos.sql` after migration 017 to enforce three successfully registered photos per gallery category at setup completion. Existing uploads count, and partial batches can be completed later. Established setup completion is preserved. No files are deleted.
+
+## Automatic gallery photos
+
+Apply `019_automatic_gallery_photos.sql` after migration 018. New and previously pending photos no longer require individual approval. University profiles publish after setup; virtual tours also publish automatically after migration 021. The first photo becomes the cover if none exists. Photos remain in their original storage bucket and are delivered through `/api/media` with short-lived signed URLs, subject to publication/manager permissions. Existing private documents are not exposed or moved. Admin review shows gallery photos without approval controls.
+
+Apply `020_google_maps_short_links.sql` after migration 019 to accept HTTPS Google Maps share links on `maps.app.goo.gl` in the tour form. Exact-host validation and media-management permissions remain enforced.
+
+Apply `021_automatic_university_publication.sql` after migration 020 to eliminate university, course, and tour approval steps. Completed pending universities publish automatically, and subsequent profile/course edits remain published. Draft universities must still finish setup. Removed, suspended, and rejected records are preserved without reinstatement. Admin approval forms are removed; removal, restoration, account management, and deletion controls remain available. Internal `approved` status values are retained for compatibility with existing discovery and booking policies, not as a claim of human verification.

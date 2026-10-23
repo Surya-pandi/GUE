@@ -57,10 +57,10 @@ const universitySteps = [
   },
   {
     icon: ShieldCheck,
-    title: "Complete verification",
+    title: "Complete your profile",
     detail:
-      "Upload supporting documents from your dashboard and add your university profile, courses, and campus photographs. An administrator reviews your submission before publication.",
-    note: "Verification documents stay private; public media needs approval.",
+      "Complete your university profile, select your courses, and upload campus photographs. Your university appears automatically when setup is complete.",
+    note: "Complete your profile, courses, and required gallery photos to publish.",
   },
   {
     icon: CalendarDays,
@@ -74,7 +74,7 @@ const universitySteps = [
     title: "Manage conversations and visits",
     detail:
       "Review enquiries and booking requests in your dashboard. Confirm or reject requests, provide a supported meeting link for counselling, and keep students informed of their visit arrangements.",
-    note: "Profile and course changes return to administrator review.",
+    note: "Profile and course changes appear automatically on published universities.",
   },
 ];
 
@@ -197,8 +197,8 @@ export default function HowItWorks() {
           <p className="about-kicker">FOR UNIVERSITY TEAMS</p>
           <h2>Be part of someone’s next chapter.</h2>
           <p>
-            Register your university, submit verification documents, and publish
-            your profile after administrator approval.
+            Register your university, complete your profile, and publish your
+            profile automatically after completing setup.
           </p>
         </div>
         <Link className="button" href="/register/institution">

@@ -11,26 +11,7 @@ export async function approveAssetAction(
   try {
     const id = uuid.parse(f.get("id"));
     const kind = String(f.get("kind"));
-    if (kind === "media") {
-      const { data: m, error } = await supabase
-        .from("university_media")
-        .select("*")
-        .eq("id", id)
-        .single();
-      if (error) throw new Error("Image not found.");
-      const { data: file, error: downloadError } = await supabase.storage
-        .from("institution-private-documents")
-        .download(m.storage_path);
-      if (downloadError) throw new Error("Source image could not be loaded.");
-      const { error: uploadError } = await supabase.storage
-        .from("institution-public-media")
-        .upload(m.storage_path, file, {
-          contentType: file.type,
-          upsert: false,
-        });
-      if (uploadError && uploadError.message !== "The resource already exists")
-        throw new Error("Image could not be published.");
-    }
+    if (kind !== "tour") throw new Error("Photos no longer require approval.");
     const { error } = await supabase.rpc("approve_asset", {
       kind,
       asset: id,

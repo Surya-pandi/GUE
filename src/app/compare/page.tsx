@@ -1,9 +1,10 @@
+import { courseFeeSummary } from "@/lib/course-fees";
 import Link from "next/link";
 import { PageTitle, Empty } from "@/components/ui";
 import { CompareLoader } from "@/components/interactive";
 import { configured } from "@/lib/config";
 import { db } from "@/lib/supabase/server";
-import { Institution, Params, scalar, money } from "@/lib/data";
+import { Institution, Params, scalar } from "@/lib/data";
 import { uuid } from "@/lib/validation";
 export const metadata = { title: "Compare universities" };
 export default async function Compare({
@@ -37,9 +38,8 @@ export default async function Compare({
     [
       "Published fees",
       (c) =>
-        c.courses
-          .map((x) => `${x.name}: ${money(x.published_fee_amount)}`)
-          .join("; ") || "Not published",
+        c.courses.map((x) => `${x.name}: ${courseFeeSummary(x)}`).join("; ") ||
+        "Not published",
     ],
     [
       "Eligibility",
@@ -68,7 +68,10 @@ export default async function Compare({
                 <th>What matters to you</th>
                 {universities.map((c) => (
                   <th key={c.id}>
-                    <Link className="text-link" href={`/universities/${c.slug}`}>
+                    <Link
+                      className="text-link"
+                      href={`/universities/${c.slug}`}
+                    >
                       {c.name} ↗
                     </Link>
                   </th>
@@ -93,8 +96,8 @@ export default async function Compare({
             icon="compass"
             title="Give your shortlist a little perspective"
           >
-            Use the Compare button on university profiles to choose your options.
-            Missing information will always be marked clearly.
+            Use the Compare button on university profiles to choose your
+            options. Missing information will always be marked clearly.
           </Empty>
           <CompareLoader />
         </>

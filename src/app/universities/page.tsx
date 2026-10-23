@@ -138,8 +138,8 @@ export default async function Universities({
               }
             >
               {result.unavailable
-                ? "Verified institution profiles will appear here once the directory is connected. You can still explore study streams and learn how counselling works."
-                : "Try a broader location, another stream, or fewer filters. Only approved, published institutions appear here."}
+                ? "University profiles will appear here once the directory is connected. You can still explore study streams and learn how counselling works."
+                : "Try a broader location, another stream, or fewer filters. Only published universities appear here."}
             </Empty>
           )}
           {result.count > 12 && (

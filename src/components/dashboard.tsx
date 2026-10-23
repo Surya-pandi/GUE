@@ -1,3 +1,4 @@
+import { CourseSelection } from "@/components/course-selection";
 import Link from "next/link";
 import { redirect, notFound } from "next/navigation";
 import {
@@ -34,6 +35,16 @@ import { safeExternal, meetingHosts, uuid } from "@/lib/validation";
 import { CourseEditor } from "@/components/course-editor";
 import { ScheduleForm } from "@/components/schedule-form";
 import { UploadForm } from "@/components/upload-form";
+import {
+  universitySteps,
+  mediaCategories,
+  availableSetupStep,
+  type UniversitySetup,
+} from "@/lib/university-setup";
+import {
+  saveUniversitySetupProfileAction,
+  finishUniversitySetupAction,
+} from "@/app/actions";
 import { AdminListingControl } from "@/components/admin-listing-control";
 import { AdminDeleteControl } from "@/components/admin-delete-control";
 import {
@@ -73,7 +84,6 @@ const menus = {
     ["profile", "Institution profile", Building2],
     ["courses", "Courses", BookOpen],
     ["gallery", "Gallery & tours", Image],
-    ["documents", "Verification documents", FileCheck],
     ["schedule", "Availability", CalendarDays],
     ["counselling", "Counselling bookings", Video],
     ["visits", "Campus visits", CalendarDays],
@@ -132,6 +142,8 @@ export async function Dashboard({
         ? ["institution_owner", "institution_staff", "super_admin"]
         : ["student"],
   );
+  if (role === "institution" && section === "documents")
+    redirect("/institution/dashboard/gallery");
   const menu = menus[role];
   if (!menu.some((item) => item[0] === section)) notFound();
   const base = `/${role}/dashboard`;
@@ -175,6 +187,26 @@ export async function Dashboard({
   let content: React.ReactNode;
   const instId = institution?.id || "";
   const instHidden = { institution_id: instId };
+  let setup: UniversitySetup | null = null;
+  if (
+    role === "institution" &&
+    institution?.owner_user_id === user.id &&
+    profile.role !== "super_admin"
+  ) {
+    const { data, error } = await supabase.rpc("university_setup_status", {
+      institution: instId,
+    });
+    check(error);
+    setup = data as UniversitySetup;
+  }
+  const buildingProfile = Boolean(setup && !setup.complete);
+  const resumeStep = setup ? availableSetupStep(setup) : 0;
+  const currentStep = universitySteps.findIndex(
+    (step) => step.path === section,
+  );
+  const stepUrl = (index: number) =>
+    `${base}/${universitySteps[index].path}?institution=${instId}`;
+  if (buildingProfile && section === "") redirect(stepUrl(resumeStep));
   const pager = (count: number) =>
     count > 20 ? (
       <nav className="pagination">
@@ -261,7 +293,9 @@ export async function Dashboard({
         check(error);
         counts.push({
           label:
-            status === "approved" ? "Approved institutions" : "Pending review",
+            status === "approved"
+              ? "Published universities"
+              : "Setup in progress",
           value: count || 0,
         });
       }
@@ -297,7 +331,7 @@ export async function Dashboard({
               </p>
             </div>
             <Link href={`${base}/applications`} className="admin-primary-link">
-              Open review queue <ArrowUpRight size={20} />
+              View university registrations <ArrowUpRight size={20} />
             </Link>
           </div>
         )}
@@ -307,7 +341,7 @@ export async function Dashboard({
             <Status value={institution.verification_status} />
             <p>
               {institution.verification_notes ||
-                "Your profile must be approved before it appears in public discovery."}
+                "Complete setup to publish your university automatically."}
             </p>
           </div>
         )}
@@ -510,10 +544,17 @@ export async function Dashboard({
     content = (
       <div className="form-card wide">
         <p className="alert">
-          Profile changes return this institution to pending review and remove
-          it from public discovery until approved.
+          Your profile changes appear automatically once your university setup
+          is complete.
         </p>
-        <ActionForm action={manageAction} submit="Save and submit for review">
+        <ActionForm
+          action={
+            buildingProfile ? saveUniversitySetupProfileAction : manageAction
+          }
+          submit={
+            buildingProfile ? "Save and continue to courses →" : "Save profile"
+          }
+        >
           <Hidden values={{ operation: "institution", ...instHidden }} />
           <Field
             label="Institution name"
@@ -525,6 +566,7 @@ export async function Dashboard({
             label="Institution overview"
             name="description"
             defaultValue={institution.description}
+            required={buildingProfile}
           />
           <div className="form-grid">
             <Field
@@ -543,11 +585,13 @@ export async function Dashboard({
               label="Address"
               name="address"
               defaultValue={institution.address}
+              required={buildingProfile}
             />
             <Field
               label="Phone"
               name="phone"
               defaultValue={institution.phone}
+              required={buildingProfile}
             />
             <Field
               label="Website (HTTPS)"
@@ -591,31 +635,12 @@ export async function Dashboard({
     check(error);
     content = (
       <>
-        <div className="form-card wide">
-          <h3>Add a course</h3>
-          <p>Course changes require administrator review before publication.</p>
-          <ActionForm action={manageAction} submit="Add course">
-            <Hidden values={{ operation: "course", ...instHidden }} />
-            <div className="form-grid">
-              <Field label="Course name" name="name" required />
-              <Select
-                label="Stream"
-                name="stream"
-                options={categories?.map((c) => c.name) || streams}
-              />
-              <Field label="Degree type" name="degree_type" />
-              <Field label="Duration" name="duration" />
-              <Field
-                label="Published fee (INR, optional)"
-                name="published_fee_amount"
-                type="number"
-                min={0}
-              />
-            </div>
-            <Textarea label="Eligibility" name="eligibility" />
-            <Textarea label="Description and fee period" name="description" />
-          </ActionForm>
-        </div>
+        <CourseSelection
+          institutionId={instId}
+          categories={categories?.map((category) => category.name) || streams}
+          existing={institution?.courses || []}
+          continueSetup={buildingProfile}
+        />
         {institution?.courses.map((c) => (
           <CourseEditor
             key={c.id}
@@ -944,16 +969,63 @@ export async function Dashboard({
     check(error);
     content = (
       <>
-        <UploadForm
-          institutionId={instId}
-          kind={documents ? "document" : "media"}
-        />
+        {documents ? (
+          <UploadForm
+            institutionId={instId}
+            kind="document"
+            continueSetup={buildingProfile}
+          />
+        ) : (
+          <div className="gallery-upload-grid">
+            {mediaCategories.map((category) => (
+              <section key={category.value} className="gallery-upload-category">
+                <UploadForm
+                  institutionId={instId}
+                  kind="media"
+                  category={category.value}
+                  categoryLabel={category.label}
+                  continueSetup={buildingProfile}
+                  uploadedCount={
+                    data?.filter(
+                      (item) => item.media_category === category.value,
+                    ).length || 0
+                  }
+                />
+                <p className="gallery-upload-count">
+                  {data?.filter(
+                    (item) => item.media_category === category.value,
+                  ).length || 0}{" "}
+                  photos uploaded
+                  {" / 3 minimum - "}
+                  {Math.max(
+                    0,
+                    3 -
+                      (data?.filter(
+                        (item) => item.media_category === category.value,
+                      ).length || 0),
+                  ) > 0
+                    ? `${Math.max(0, 3 - (data?.filter((item) => item.media_category === category.value).length || 0))} more needed`
+                    : "Requirement met"}
+                </p>
+              </section>
+            ))}
+          </div>
+        )}
         {data?.map((item) => (
           <div className="record" key={item.id}>
             <h3>{item.document_type || item.alt_text}</h3>
+            {!documents && (
+              <span className="eyebrow">
+                {mediaCategories.find(
+                  (category) => category.value === item.media_category,
+                )?.label || item.media_category}
+              </span>
+            )}
             <p>
               {item.review_status ||
-                (item.is_published ? "Published" : "Pending review")}
+                (item.is_published
+                  ? "Ready for display on the published university profile"
+                  : "Apply the automatic-photo migration to enable this photo")}
             </p>
             {documents && (
               <a
@@ -970,7 +1042,7 @@ export async function Dashboard({
         {!documents && (
           <div className="form-card wide">
             <h3>Add a virtual tour</h3>
-            <ActionForm action={manageAction} submit="Submit tour for review">
+            <ActionForm action={manageAction} submit="Save virtual tour">
               <Hidden values={{ operation: "tour", ...instHidden }} />
               <Field label="Tour title" name="title" required />
               <Field
@@ -1036,7 +1108,7 @@ export async function Dashboard({
                 {i.city}, {i.state} · {i.official_email}
               </p>
               <Link className="text-link" href={`/admin/review/${i.id}`}>
-                Review application, courses, and documents →
+                View university details →
               </Link>
               {!i.removed_at && (
                 <Link
@@ -1045,31 +1117,6 @@ export async function Dashboard({
                 >
                   Manage university profile <ArrowUpRight size={14} />
                 </Link>
-              )}
-              {!i.removed_at && (
-                <details>
-                  <summary>Verification decision</summary>
-                  <ActionForm action={manageAction} submit="Record decision">
-                    <Hidden
-                      values={{ operation: "verify", institution_id: i.id }}
-                    />
-                    <Select
-                      label="Decision"
-                      name="status"
-                      options={["pending", "approved", "rejected", "suspended"]}
-                    />
-                    <Textarea
-                      label="Review notes shared with institution"
-                      name="notes"
-                      defaultValue={i.institution_reviews?.notes || ""}
-                    />
-                    <Field
-                      label="Verified accreditation (only after checking evidence)"
-                      name="accreditation"
-                      defaultValue={i.accreditation}
-                    />
-                  </ActionForm>
-                </details>
               )}
               <AdminListingControl
                 id={i.id}
@@ -1088,7 +1135,7 @@ export async function Dashboard({
             }
           >
             {section === "removed"
-              ? "Universities removed from discovery appear here and can be restored for review."
+              ? "Universities removed from discovery appear here and can be restored to the directory."
               : "Try another search or return when institutions have submitted applications."}
           </Empty>
         )}
@@ -1561,6 +1608,56 @@ export async function Dashboard({
               ? "Keep everything moving, one step at a time."
               : "Here’s where your next steps come together."}
         </PageTitle>
+        {buildingProfile && setup && (
+          <section
+            className="university-setup"
+            aria-label="University profile setup"
+          >
+            <p className="eyebrow">BUILD YOUR UNIVERSITY PROFILE</p>
+            <h2>
+              {currentStep >= 0
+                ? `Step ${currentStep + 1} of ${universitySteps.length}`
+                : "Complete your setup"}
+            </h2>
+            <p>
+              Each completed step takes you to the next section automatically.
+              Your progress is saved, and you can return to any section.
+            </p>
+            <ol className="setup-steps">
+              {universitySteps.map((step, index) => (
+                <li
+                  key={step.path}
+                  className={
+                    index === currentStep
+                      ? "current"
+                      : setup[step.path]
+                        ? "done"
+                        : ""
+                  }
+                >
+                  {
+                    <Link
+                      href={stepUrl(index)}
+                      aria-current={index === currentStep ? "step" : undefined}
+                    >
+                      <span>{setup[step.path] ? "✓" : index + 1}</span>
+                      {step.label}
+                    </Link>
+                  }
+                </li>
+              ))}
+            </ol>
+            {currentStep >= 0 && <p>{universitySteps[currentStep].help}</p>}
+          </section>
+        )}
+        {role === "institution" &&
+          setup?.complete &&
+          scalar(p, "setup") === "complete" && (
+            <p className="alert success" role="status">
+              Profile setup complete. Your workspace is ready. Your university
+              is now available to students.
+            </p>
+          )}
         {role === "admin" && scalar(p, "deleted") === "1" && (
           <p className="alert success" role="status">
             The record was permanently deleted.
@@ -1574,6 +1671,31 @@ export async function Dashboard({
             <AdminCleanup />
           )}
         {content}
+        {buildingProfile && setup && currentStep >= 0 && (
+          <nav className="setup-actions" aria-label="Profile setup navigation">
+            {currentStep > 0 && (
+              <Link
+                className="button secondary"
+                href={stepUrl(currentStep - 1)}
+              >
+                ← Back
+              </Link>
+            )}
+            {currentStep > 0 && currentStep < universitySteps.length - 1 && (
+              <Link className="button" href={stepUrl(currentStep + 1)}>
+                Next: {universitySteps[currentStep + 1].label} →
+              </Link>
+            )}
+            {currentStep === universitySteps.length - 1 && (
+              <ActionForm
+                action={finishUniversitySetupAction}
+                submit="Finish setup and open dashboard →"
+              >
+                <Hidden values={instHidden} />
+              </ActionForm>
+            )}
+          </nav>
+        )}
       </div>
     </div>
   );

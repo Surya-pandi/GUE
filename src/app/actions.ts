@@ -6,6 +6,11 @@ import { db } from "@/lib/supabase/server";
 import { requireUser } from "@/lib/auth";
 import { config } from "@/lib/config";
 import {
+  accountDestination,
+  isConnectionFailure,
+  connectionMessage,
+} from "@/lib/account-routing";
+import {
   email,
   password,
   safeRedirect,
@@ -17,6 +22,7 @@ import {
 import type { ActionState } from "@/components/action-form";
 const text = (f: FormData, key: string) => String(f.get(key) || "").trim();
 function failure(error: unknown): ActionState {
+  if (isConnectionFailure(error)) return { error: connectionMessage };
   if (error instanceof z.ZodError)
     return { error: error.issues[0]?.message || "Please check the form." };
   return {
@@ -36,16 +42,33 @@ export async function loginAction(
   let destination = "/dashboard";
   try {
     const supabase = await db();
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email: email.parse(text(f, "email")),
       password: String(f.get("password") || ""),
     });
     if (error)
       return {
-        error:
-          "We could not sign you in. Check your credentials and email verification.",
+        error: isConnectionFailure(error)
+          ? connectionMessage
+          : "We could not sign you in. Check your credentials and email verification.",
       };
-    destination = safeRedirect(text(f, "next"));
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", data.user.id)
+      .single();
+    check(profileError);
+    if (!profile)
+      throw new Error(
+        "Your account profile could not be loaded. Please try again.",
+      );
+    destination = accountDestination(
+      profile.role,
+      text(f, "account_type") === "institution"
+        ? "institution"
+        : data.user.user_metadata?.account_type,
+      text(f, "next"),
+    );
   } catch (e) {
     return failure(e);
   }
@@ -70,7 +93,13 @@ export async function registerAction(
       email: email.parse(text(f, "email")),
       password: password.parse(String(f.get("password") || "")),
       options: {
-        data: { full_name: fullName },
+        data: {
+          full_name: fullName,
+          account_type:
+            text(f, "account_type") === "institution"
+              ? "institution"
+              : "student",
+        },
         emailRedirectTo: `${config.url}/auth/callback?next=${encodeURIComponent(next)}`,
       },
     });
@@ -231,6 +260,27 @@ export async function manageAction(
       if (text(f, "website_url") && !safeExternal(text(f, "website_url")))
         throw new Error("Use a valid HTTPS website URL.");
     }
+    if (operation === "course" && text(f, "remove") !== "true") {
+      for (const quota of ["counselling", "management"]) {
+        const min = text(f, `${quota}_fee_min`);
+        const max = text(f, `${quota}_fee_max`);
+        if (Boolean(min) !== Boolean(max))
+          throw new Error(
+            `Enter both From and To fees for the ${quota} quota, or leave both blank.`,
+          );
+        if (
+          min &&
+          (!Number.isFinite(Number(min)) ||
+            !Number.isFinite(Number(max)) ||
+            Number(min) < 0 ||
+            Number(max) < Number(min) ||
+            Number(max) > 1000000000)
+        )
+          throw new Error(
+            `Check the ${quota} quota fee range. To must be at least From, and fees cannot be negative.`,
+          );
+      }
+    }
     if (operation === "staff") {
       email.parse(payload.email);
       payload.permissions = f.getAll("permissions");
@@ -268,6 +318,154 @@ export async function manageAction(
     return failure(e);
   }
 }
+export async function saveUniversitySetupProfileAction(
+  state: ActionState,
+  f: FormData,
+): Promise<ActionState> {
+  await requireUser(["institution_owner", "super_admin"]);
+  for (const field of [
+    "name",
+    "description",
+    "city",
+    "state",
+    "address",
+    "phone",
+  ]) {
+    if (
+      text(f, field).trim().length <
+      (field === "description" ? 3 : field === "name" ? 2 : 1)
+    )
+      return {
+        error:
+          "Complete the university name, overview, city, state, address, and phone first.",
+      };
+  }
+  f.set("operation", "institution");
+  const saved = await manageAction(state, f);
+  if (saved.error) return saved;
+  const { supabase } = await requireUser(["institution_owner", "super_admin"]);
+  let institution: string;
+  try {
+    institution = uuid.parse(text(f, "institution_id"));
+    const { error } = await supabase.rpc("complete_university_setup_step", {
+      institution,
+      step: "profile",
+    });
+    check(error);
+  } catch (e) {
+    return failure(e);
+  }
+  revalidatePath("/institution/dashboard", "layout");
+  redirect(`/institution/dashboard/courses?institution=${institution}`);
+}
+
+export async function saveCourseSelectionAction(
+  _: ActionState,
+  f: FormData,
+): Promise<ActionState> {
+  const { supabase } = await requireUser([
+    "institution_owner",
+    "institution_staff",
+    "super_admin",
+  ]);
+  let institution: string;
+  let added = 0;
+  try {
+    institution = uuid.parse(text(f, "institution_id"));
+    const choices = z
+      .array(
+        z.object({
+          stream: z.string().trim().min(1).max(100),
+          name: z.string().trim().min(2).max(180),
+          degree_type: z.string().trim().min(1).max(100),
+        }),
+      )
+      .min(1, "Select at least one course and degree.")
+      .max(100)
+      .parse(JSON.parse(text(f, "programmes") || "[]"));
+    const programmes = choices.map((choice, index) => {
+      const details: Record<string, string> = {};
+      for (const key of [
+        "duration",
+        "eligibility",
+        "description",
+        "fee_period",
+        "counselling_fee_min",
+        "counselling_fee_max",
+        "management_fee_min",
+        "management_fee_max",
+      ]) {
+        details[key] = text(f, `programme_${index}_${key}`);
+      }
+      for (const quota of ["counselling", "management"]) {
+        const min = details[`${quota}_fee_min`],
+          max = details[`${quota}_fee_max`];
+        if (
+          Boolean(min) !== Boolean(max) ||
+          (min &&
+            (!Number.isFinite(Number(min)) ||
+              !Number.isFinite(Number(max)) ||
+              Number(min) < 0 ||
+              Number(max) < Number(min) ||
+              Number(max) > 1000000000))
+        ) {
+          throw new Error(
+            `${choice.degree_type} ${choice.name}: enter a valid From/To range for ${quota} quota, or leave both blank.`,
+          );
+        }
+      }
+      return { ...choice, ...details };
+    });
+    const { data, error } = await supabase.rpc("save_course_selection", {
+      institution,
+      programmes,
+    });
+    check(error);
+    added = Number(data || 0);
+  } catch (e) {
+    return failure(e);
+  }
+  revalidatePath("/", "layout");
+  if (text(f, "continue_setup") === "true")
+    redirect(`/institution/dashboard/gallery?institution=${institution}`);
+  return {
+    success: `${added} programme(s) saved. Existing programmes were kept unchanged. You can edit each programme below.`,
+  };
+}
+
+export async function saveUniversitySetupCourseAction(
+  state: ActionState,
+  f: FormData,
+): Promise<ActionState> {
+  await requireUser(["institution_owner", "super_admin"]);
+  f.set("operation", "course");
+  const saved = await manageAction(state, f);
+  if (saved.error) return saved;
+  redirect(
+    `/institution/dashboard/gallery?institution=${uuid.parse(text(f, "institution_id"))}`,
+  );
+}
+
+export async function finishUniversitySetupAction(
+  _: ActionState,
+  f: FormData,
+): Promise<ActionState> {
+  const { supabase } = await requireUser(["institution_owner", "super_admin"]);
+  let institution: string;
+  try {
+    institution = uuid.parse(text(f, "institution_id"));
+    const { error } = await supabase.rpc("complete_university_setup_step", {
+      institution,
+      step: "finish",
+    });
+    check(error);
+  } catch (e) {
+    return failure(e);
+  }
+  revalidatePath("/institution/dashboard", "layout");
+  redirect(`/institution/dashboard?institution=${institution}&setup=complete`);
+}
+
 export async function bookAction(
   _: ActionState,
   f: FormData,

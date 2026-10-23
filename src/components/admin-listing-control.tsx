@@ -19,12 +19,12 @@ export function AdminListingControl({
       </summary>
       <p>
         {removed
-          ? "Restore this university to pending review. An administrator must approve it before it appears in discovery."
+          ? "Restore this university. It appears automatically if setup is complete."
           : "Remove this university from discovery and prevent new bookings. Existing bookings, accounts, and documents will be kept."}
       </p>
       <ActionForm
         action={adminListingAction}
-        submit={removed ? "Restore to review queue" : "Confirm removal"}
+        submit={removed ? "Restore university" : "Confirm removal"}
       >
         <input type="hidden" name="institution_id" value={id} />
         <input

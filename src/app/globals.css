@@ -3891,3 +3891,51 @@ tr:last-child td {
     padding: 16px;
   }
 }
+
+/* Guided university profile setup */
+.university-setup {
+  padding: clamp(20px, 3vw, 32px);
+  margin-bottom: 28px;
+  border: 1px solid #dce5f3;
+  border-radius: 24px;
+  background: linear-gradient(120deg, #edf3ff, #f5f8ef);
+}
+.university-setup h2 { margin: 8px 0; }
+.setup-steps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; list-style: none; padding: 0; margin: 24px 0; }
+.setup-steps li > a, .setup-steps li > span { display: flex; align-items: center; gap: 10px; padding: 14px 10px; border-radius: 14px; background: #ffffffb3; font-size: 13px; font-weight: 600; min-height: 66px; }
+.setup-steps li > span { color: #68778b; }
+.setup-steps li > a > span, .setup-steps li > span > span { display: grid; place-items: center; flex-shrink: 0; width: 28px; height: 28px; border: 1px solid #cad6e7; border-radius: 50%; }
+.setup-steps .done > a { color: #176148; }
+.setup-steps .current > a { color: #fff; background: #2455cc; }
+.setup-steps .current > a > span { border-color: #ffffff80; }
+.setup-nav-locked { display: flex; align-items: center; gap: 12px; padding: 14px; color: #758196; font-size: 13px; }
+.setup-nav-locked small { margin-left: auto; font-size: 10px; }
+.setup-actions { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 18px; margin-top: 30px; padding-top: 24px; border-top: 1px solid #dce5f3; }
+.setup-actions .action-form { margin: 0; }
+.gallery-upload-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px; margin-bottom: 30px; }
+.gallery-upload-category { min-width: 0; border: 1px solid #dce5f3; border-radius: 20px; overflow: hidden; }
+.gallery-upload-category .form-card { margin: 0; padding: 24px; box-shadow: none; border: 0; border-radius: 0; }
+.gallery-upload-category input { min-width: 0; max-width: 100%; }
+.gallery-upload-count { margin: 0; padding: 14px 24px; background: #f2f6fb; font-size: 13px; }
+@media (max-width: 1000px) { .setup-steps { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 640px) { .gallery-upload-grid { grid-template-columns: 1fr; } .setup-steps { gap: 8px; } .setup-actions > * { width: 100%; } }
+
+.programme-checkbox-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin: 16px 0; }
+.programme-checkbox-grid .check { align-items: flex-start; padding: 12px; border: 1px solid #dce5f3; border-radius: 10px; }
+.programme-checkbox-grid .check:has(input:checked) { background: #edf3ff; border-color: #9ab5f4; }
+.programme-stream, .programme-review { border: 1px solid #dce5f3; border-radius: 16px; padding: 20px; margin: 20px 0; }
+.programme-degrees { background: #f7f9fc; padding: 16px; margin: 16px 0; border-radius: 12px; }
+.programme-review summary, .programme-degrees summary { cursor: pointer; font-weight: 600; }
+.custom-programme-option { display: flex; align-items: end; gap: 12px; flex-wrap: wrap; margin: 18px 0; }
+.custom-programme-option .field { flex: 1; min-width: 180px; margin: 0; }
+@media (max-width: 600px) { .programme-checkbox-grid { grid-template-columns: 1fr; } .programme-stream, .programme-review { padding: 14px; } }
+
+.programme-degrees .programme-checkbox-grid { max-height: 300px; overflow-y: auto; padding: 4px; }
+
+.photo-category-filters { display: flex; flex-wrap: wrap; gap: 10px; margin: 20px 0 28px; }
+.photo-category-filters button { cursor: pointer; font: inherit; }
+.photo-category-filters button[aria-pressed="true"] { background: #2455cc; border-color: #2455cc; color: white; }
+.photo-category-filters button:focus-visible { outline: 3px solid #91b2ff; outline-offset: 3px; }
+.photo-category-section { margin: 28px 0; }
+.photo-category-section h3 { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; }
+.photo-category-count { font-size: 13px; font-weight: 400; color: #526581; }

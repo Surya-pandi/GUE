@@ -11,19 +11,21 @@ export function ActionForm({
   submit = "Save changes",
   className = "",
   disabled = false,
+  submitDisabled = false,
 }: {
   action: FormAction;
   children?: React.ReactNode;
   submit?: string;
   className?: string;
   disabled?: boolean;
+  submitDisabled?: boolean;
 }) {
   const [state, formAction, pending] = useActionState(action, {});
   return (
     <form action={formAction} className={`action-form ${className}`}>
       <fieldset disabled={disabled || pending}>
         {children}
-        <button className="button" type="submit">
+        <button className="button" type="submit" disabled={submitDisabled}>
           {pending ? "Please wait…" : submit}
         </button>
       </fieldset>

@@ -29,6 +29,14 @@ test("migrations enforce privacy, role protection, booking workflows, and report
     "011_student_profile_details.sql",
     "012_optional_student_marks.sql",
     "013_student_district.sql",
+    "014_university_setup.sql",
+    "015_course_catalog_and_fees.sql",
+    "016_course_selection.sql",
+    "017_remove_document_setup.sql",
+    "018_gallery_minimum_photos.sql",
+    "019_automatic_gallery_photos.sql",
+    "020_google_maps_short_links.sql",
+    "021_automatic_university_publication.sql",
   ]) {
     if (file === "009_university_terminology.sql") {
       await db.exec(`
@@ -569,7 +577,7 @@ test("migrations enforce privacy, role protection, booking workflows, and report
   );
   await asUser(owner);
   await t.test(
-    "university media uploads and approval preserve access restrictions",
+    "photos are available automatically for published universities while documents remain private",
     async () => {
       const path = `${institution}/media/campus.png`;
       await db.query(
@@ -590,26 +598,43 @@ test("migrations enforce privacy, role protection, booking workflows, and report
       await asUser(student);
       assert.equal(
         (await db.query("select * from public.university_media")).rows.length,
+        1,
+      );
+      assert.equal(
+        (
+          await db.query(
+            "select * from storage.objects where bucket_id='institution-private-documents' and name=$1",
+            [path],
+          )
+        ).rows.length,
+        1,
+      );
+      assert.equal(
+        (
+          await db.query(
+            "select * from storage.objects where bucket_id='institution-private-documents' and name like '%/document/%'",
+          )
+        ).rows.length,
         0,
       );
       await assert.rejects(
-        rpc("approve_asset", ["media", rows[0].id, false]),
-        /Access denied/,
+        rpc("record_upload", [
+          institution,
+          path,
+          "media",
+          "Unauthorized image",
+        ]),
+        /not authorized/,
       );
-      await asUser(admin);
-      await db.query(
-        "insert into storage.objects(bucket_id,name) values('institution-public-media',$1)",
-        [path],
-      );
-      await rpc("approve_asset", ["media", rows[0].id, false]);
+      await asUser(owner);
       assert.equal(
         (
-          await db.query<{ is_published: boolean }>(
-            "select is_published from public.university_media where id=$1",
-            [rows[0].id],
+          await db.query<{ cover_image_path: string }>(
+            "select cover_image_path from public.institutions where id=$1",
+            [institution],
           )
-        ).rows[0].is_published,
-        true,
+        ).rows[0].cover_image_path,
+        path,
       );
       await asUser(owner);
     },
@@ -1088,6 +1113,401 @@ test("migrations enforce privacy, role protection, booking workflows, and report
       assert.ok(
         jobs.length >= 2,
         "Non-admin deletion does not acknowledge any cleanup jobs",
+      );
+    },
+  );
+  await t.test(
+    "university setup requires saved details and uploads, preserves categories, and rejects other users",
+    async () => {
+      await db.exec("reset role");
+      const setupOwner = "00000000-0000-4000-8000-000000000088";
+      await db.query(
+        "insert into auth.users(id,email) values($1,'setup@test.invalid')",
+        [setupOwner],
+      );
+      await asUser(setupOwner);
+      const { rows } = await rpc("submit_institution", [
+        {
+          name: "Setup University",
+          institution_type: "University",
+          official_email: "setup@test.invalid",
+          city: "Test City",
+          state: "Test State",
+        },
+      ]);
+      const id = rows[0].result;
+      const status = async () =>
+        (
+          await db.query<{
+            result: {
+              profile: boolean;
+              courses: boolean;
+              gallery: boolean;
+              documents: boolean;
+              complete: boolean;
+            };
+          }>("select public.university_setup_status($1) as result", [id])
+        ).rows[0].result;
+      assert.deepEqual(await status(), {
+        profile: false,
+        courses: false,
+        gallery: false,
+        documents: false,
+        complete: false,
+      });
+      await assert.rejects(
+        rpc("complete_university_setup_step", [id, "finish"]),
+        /Complete your profile/,
+      );
+      await assert.rejects(
+        rpc("complete_university_setup_step", [id, "profile"]),
+        /overview/,
+      );
+      await rpc("manage_record", [
+        "institution",
+        {
+          institution_id: id,
+          name: "Setup University",
+          description: "A university overview",
+          city: "Test City",
+          state: "Test State",
+          address: "123 Campus Road",
+          phone: "9876543210",
+        },
+      ]);
+      await rpc("complete_university_setup_step", [id, "profile"]);
+      assert.equal((await status()).profile, true);
+      await rpc("manage_record", [
+        "course",
+        { institution_id: id, name: "Computer Science", stream: "Engineering" },
+      ]);
+      for (const category of [
+        "hostel",
+        "infrastructure",
+        "lab",
+        "library",
+        "sports",
+        "other",
+        "campus",
+      ]) {
+        const path = `${id}/media/${category}.png`;
+        await db.query(
+          "insert into storage.objects(bucket_id,name) values('institution-private-documents',$1)",
+          [path],
+        );
+        await assert.rejects(
+          rpc("record_categorized_upload", [
+            id,
+            path,
+            "media",
+            "Sample photograph",
+            "invalid",
+          ]),
+          /valid gallery category/,
+        );
+        await asUser(student);
+        await assert.rejects(
+          rpc("record_categorized_upload", [
+            id,
+            path,
+            "media",
+            "Sample photograph",
+            category,
+          ]),
+          /not authorized/,
+        );
+        await assert.rejects(
+          rpc("complete_university_setup_step", [id, "finish"]),
+          /access denied/,
+        );
+        await asUser(setupOwner);
+        await rpc("record_categorized_upload", [
+          id,
+          path,
+          "media",
+          "Sample photograph",
+          category,
+        ]);
+        const saved = await db.query<{
+          media_category: string;
+          is_published: boolean;
+        }>(
+          "select media_category,is_published from public.university_media where storage_path=$1",
+          [path],
+        );
+        assert.equal(saved.rows[0].media_category, category);
+        assert.equal(saved.rows[0].is_published, true);
+        assert.equal((await status()).gallery, false);
+      }
+      await assert.rejects(
+        rpc("complete_university_setup_step", [id, "finish"]),
+        /at least 3 photos/,
+      );
+      for (const category of [
+        "campus",
+        "hostel",
+        "infrastructure",
+        "lab",
+        "library",
+        "sports",
+        "other",
+      ]) {
+        for (const number of [2, 3]) {
+          assert.equal((await status()).gallery, false);
+          const path = `${id}/media/${category}-${number}.png`;
+          await db.query(
+            "insert into storage.objects(bucket_id,name) values('institution-private-documents',$1)",
+            [path],
+          );
+          await rpc("record_categorized_upload", [
+            id,
+            path,
+            "media",
+            "Additional university photo",
+            category,
+          ]);
+        }
+      }
+      assert.equal((await status()).gallery, true);
+      assert.equal((await status()).documents, false);
+      await rpc("complete_university_setup_step", [id, "finish"]);
+      assert.equal((await status()).complete, true);
+      const path = `${id}/document/verification.pdf`;
+      await db.query(
+        "insert into storage.objects(bucket_id,name) values('institution-private-documents',$1)",
+        [path],
+      );
+      await rpc("record_categorized_upload", [
+        id,
+        path,
+        "document",
+        "University certificate",
+        "campus",
+      ]);
+      await rpc("complete_university_setup_step", [id, "finish"]);
+      assert.equal((await status()).complete, true);
+      const publication = await db.query<{
+        verification_status: string;
+        published_at: string | null;
+      }>(
+        "select verification_status,published_at from public.institutions where id=$1",
+        [id],
+      );
+      assert.equal(publication.rows[0].verification_status, "approved");
+      assert.ok(publication.rows[0].published_at);
+    },
+  );
+  await t.test(
+    "course quota fee ranges validate and persist through the authorized workflow",
+    async () => {
+      await db.exec("reset role");
+      const setupOwner = "00000000-0000-4000-8000-000000000088";
+      const { rows: institutions } = await db.query<{ id: string }>(
+        "select id from public.institutions where owner_user_id=$1",
+        [setupOwner],
+      );
+      const institution_id = institutions[0].id;
+      await asUser(setupOwner);
+      const payload = {
+        institution_id,
+        name: "Pharmacy",
+        stream: "Pharmacy",
+        degree_type: "B.Pharm.",
+        counselling_fee_min: "50000",
+        counselling_fee_max: "75000",
+        management_fee_min: "100000",
+        management_fee_max: "150000",
+        fee_period: "Per year",
+      };
+      await rpc("manage_record", ["course", payload]);
+      const { rows } = await db.query<{
+        id: string;
+        counselling_fee_min: string;
+        management_fee_max: string;
+        published_fee_amount: string;
+      }>(
+        "select * from public.courses where institution_id=$1 and name='Pharmacy'",
+        [institution_id],
+      );
+      assert.equal(Number(rows[0].counselling_fee_min), 50000);
+      assert.equal(Number(rows[0].management_fee_max), 150000);
+      assert.equal(Number(rows[0].published_fee_amount), 50000);
+      for (const invalid of [
+        { counselling_fee_max: "40000" },
+        { counselling_fee_min: "-1" },
+        { management_fee_max: "" },
+        { fee_period: "invalid" },
+      ]) {
+        await assert.rejects(
+          rpc("manage_record", ["course", { ...payload, ...invalid }]),
+          /check constraint/,
+        );
+      }
+      await asUser(student);
+      await assert.rejects(
+        rpc("manage_record", ["course", { ...payload, id: rows[0].id }]),
+        /Access denied/,
+      );
+      await asUser(setupOwner);
+      await rpc("manage_record", [
+        "course",
+        {
+          ...payload,
+          id: rows[0].id,
+          counselling_fee_min: "",
+          counselling_fee_max: "",
+          management_fee_min: "0",
+          management_fee_max: "0",
+          fee_period: "Entire course",
+        },
+      ]);
+      const updated = (
+        await db.query<{
+          counselling_fee_min: null;
+          management_fee_min: string;
+          fee_period: string;
+          is_published: boolean;
+        }>("select * from public.courses where id=$1", [rows[0].id])
+      ).rows[0];
+      assert.equal(updated.counselling_fee_min, null);
+      assert.equal(Number(updated.management_fee_min), 0);
+      assert.equal(updated.fee_period, "Entire course");
+      assert.equal(updated.is_published, true);
+      const listing = (
+        await db.query<{
+          verification_status: string;
+          published_at: string | null;
+        }>(
+          "select verification_status,published_at from public.institutions where id=$1",
+          [institution_id],
+        )
+      ).rows[0];
+      assert.equal(listing.verification_status, "approved");
+      assert.ok(listing.published_at);
+    },
+  );
+  await t.test(
+    "multiple programme selections save atomically without duplicates or cross-university edits",
+    async () => {
+      await db.exec("reset role");
+      const ownerId = "00000000-0000-4000-8000-000000000088";
+      const id = (
+        await db.query<{ id: string }>(
+          "select id from public.institutions where owner_user_id=$1",
+          [ownerId],
+        )
+      ).rows[0].id;
+      const programmes = [
+        {
+          name: "Data Science",
+          stream: "Engineering",
+          degree_type: "B.Tech.",
+          counselling_fee_min: "100",
+          counselling_fee_max: "200",
+        },
+        {
+          name: "Data Science",
+          stream: "Engineering",
+          degree_type: "M.Tech.",
+          management_fee_min: "300",
+          management_fee_max: "400",
+        },
+        { name: "Accounting", stream: "Commerce", degree_type: "B.Com." },
+      ];
+      await asUser(ownerId);
+      assert.equal(
+        (await rpc("save_course_selection", [id, programmes])).rows[0].result,
+        3,
+      );
+      assert.equal(
+        (await rpc("save_course_selection", [id, programmes])).rows[0].result,
+        0,
+      );
+      const count = async () =>
+        (
+          await db.query(
+            "select id from public.courses where institution_id=$1",
+            [id],
+          )
+        ).rows.length;
+      const before = await count();
+      await assert.rejects(
+        rpc("save_course_selection", [
+          id,
+          [
+            {
+              name: "Rollback test",
+              stream: "Engineering",
+              degree_type: "B.E.",
+            },
+            {
+              name: "Invalid",
+              stream: "Engineering",
+              degree_type: "B.E.",
+              management_fee_min: "200",
+              management_fee_max: "100",
+            },
+          ],
+        ]),
+        /check constraint/,
+      );
+      assert.equal(await count(), before);
+      await assert.rejects(
+        rpc("save_course_selection", [id, []]),
+        /between 1 and 100/,
+      );
+      await assert.rejects(
+        rpc("save_course_selection", [
+          id,
+          [{ name: "No degree", stream: "Engineering" }],
+        ]),
+        /Choose a degree/,
+      );
+      await asUser(student);
+      await assert.rejects(
+        rpc("save_course_selection", [id, programmes]),
+        /Access denied/,
+      );
+    },
+  );
+  await t.test(
+    "tour workflow accepts Maps share links and preserves permission checks",
+    async () => {
+      await db.exec("reset role");
+      const ownerId = "00000000-0000-4000-8000-000000000088";
+      const id = (
+        await db.query<{ id: string }>(
+          "select id from public.institutions where owner_user_id=$1",
+          [ownerId],
+        )
+      ).rows[0].id;
+      const payload = {
+        institution_id: id,
+        title: "Campus tour",
+        tour_url: "https://maps.app.goo.gl/example",
+      };
+      await asUser(ownerId);
+      await rpc("manage_record", ["tour", payload]);
+      const tours = (
+        await db.query<{ is_published: boolean }>(
+          "select is_published from public.institution_tours where institution_id=$1",
+          [id],
+        )
+      ).rows;
+      assert.ok(tours.length > 0 && tours.every((tour) => tour.is_published));
+      for (const tour_url of [
+        "http://maps.app.goo.gl/example",
+        "https://maps.app.goo.gl.evil.test/example",
+        "https://maps.app.goo.gl@evil.test/example",
+      ])
+        await assert.rejects(
+          rpc("manage_record", ["tour", { ...payload, tour_url }]),
+          /approved tour URL/,
+        );
+      await asUser(student);
+      await assert.rejects(
+        rpc("manage_record", ["tour", payload]),
+        /media access/,
       );
     },
   );

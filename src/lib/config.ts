@@ -1,3 +1,4 @@
+import { courseCatalog } from "./course-catalog";
 export const config = {
   name: process.env.NEXT_PUBLIC_BRAND_NAME || "GLOBAL UNIVERSITY EXPO",
   logo:
@@ -12,14 +13,7 @@ export const supabasePublicKey =
 export const configured = Boolean(
   process.env.NEXT_PUBLIC_SUPABASE_URL && supabasePublicKey,
 );
-export const streams = [
-  "Engineering",
-  "Arts & Science",
-  "Medicine",
-  "Management",
-  "Agriculture",
-  "Law",
-];
+export const streams = Object.keys(courseCatalog);
 export const facilities = [
   "Library",
   "Laboratories",

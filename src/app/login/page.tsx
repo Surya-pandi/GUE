@@ -8,6 +8,7 @@ import { Params, scalar } from "@/lib/data";
 import { session } from "@/lib/auth";
 import { safeRedirect } from "@/lib/validation";
 import { redirect } from "next/navigation";
+import { accountDestination } from "@/lib/account-routing";
 export const metadata = { title: "Log in" };
 export default async function Login({
   searchParams,
@@ -23,7 +24,15 @@ export default async function Login({
     requestedNext.split(/[?#]/)[0].replace(/\/+$/, "") === "/login"
       ? "/dashboard"
       : requestedNext;
-  if (await session()) redirect(next);
+  const current = await session();
+  if (current)
+    redirect(
+      accountDestination(
+        current.profile.role,
+        institution ? "institution" : current.user.user_metadata?.account_type,
+        next,
+      ),
+    );
   if (!selected) {
     return (
       <section className="container registration-choice">
@@ -116,6 +125,7 @@ export default async function Login({
           disabled={!configured}
         >
           <input type="hidden" name="next" value={next} />
+          <input type="hidden" name="account_type" value={type} />
           <Field label="Email address" name="email" type="email" required />
           <Field label="Password" name="password" type="password" required />
         </ActionForm>

@@ -1,8 +1,9 @@
+import { courseFeeSummary } from "@/lib/course-fees";
 import Link from "next/link";
 import { PageTitle, Field, Select, Empty } from "@/components/ui";
 import { db } from "@/lib/supabase/server";
 import { configured, streams } from "@/lib/config";
-import { Params, scalar, money } from "@/lib/data";
+import { Params, scalar } from "@/lib/data";
 export const metadata = { title: "Explore courses" };
 export const dynamic = "force-dynamic";
 export default async function Courses({
@@ -15,9 +16,15 @@ export default async function Courses({
     id: string;
     name: string;
     stream: string;
+    degree_type: string;
     duration: string;
     eligibility: string;
     published_fee_amount: number | null;
+    counselling_fee_min: number | null;
+    counselling_fee_max: number | null;
+    management_fee_min: number | null;
+    management_fee_max: number | null;
+    fee_period: string;
     institutions: { name: string; slug: string } | null;
   }[] = [];
   let count = 0;
@@ -27,7 +34,7 @@ export default async function Courses({
     let query = supabase
       .from("courses")
       .select(
-        "id,name,stream,duration,eligibility,published_fee_amount,institutions!inner(name,slug)",
+        "id,name,stream,degree_type,duration,eligibility,published_fee_amount,counselling_fee_min,counselling_fee_max,management_fee_min,management_fee_max,fee_period,institutions!inner(name,slug)",
         { count: "exact" },
       )
       .eq("is_published", true)
@@ -77,6 +84,7 @@ export default async function Courses({
             <article key={c.id}>
               <span className="tag">{c.stream}</span>
               <h2>{c.name}</h2>
+              {c.degree_type && <p>{c.degree_type}</p>}
               <p>
                 {c.institutions?.name} ·{" "}
                 {c.duration || "Duration not published"}
@@ -85,7 +93,7 @@ export default async function Courses({
                 <strong>Eligibility:</strong> {c.eligibility || "Not published"}
               </p>
               <p>
-                <strong>Published fee:</strong> {money(c.published_fee_amount)}
+                <strong>Fee structure:</strong> {courseFeeSummary(c)}
               </p>
               <Link
                 className="text-link"
@@ -100,7 +108,7 @@ export default async function Courses({
         <Empty title="Your interests are a starting point" icon="compass">
           {configured
             ? "No published courses match these filters. Try another stream or search."
-            : "Published course information will appear as verified institutions join the directory."}
+            : "Published course information will appear as universities join the directory."}
         </Empty>
       )}
       {count > 12 && (

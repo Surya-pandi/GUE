@@ -92,7 +92,7 @@ export async function adminListingAction(
       success:
         operation === "remove"
           ? "University removed from discovery. Existing bookings and records are preserved."
-          : "University restored to pending review. Approve it to publish again.",
+          : "University restored. It appears automatically when setup is complete.",
     };
   } catch (error) {
     return {

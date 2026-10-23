@@ -10,6 +10,11 @@ export type Course = {
   duration: string;
   eligibility: string;
   published_fee_amount: number | null;
+  counselling_fee_min: number | null;
+  counselling_fee_max: number | null;
+  management_fee_min: number | null;
+  management_fee_max: number | null;
+  fee_period: string;
   description: string;
   is_published: boolean;
 };
@@ -38,7 +43,7 @@ export const scalar = (p: Params, key: string) =>
   typeof p[key] === "string" ? (p[key] as string) : "";
 export function mediaUrl(path: string | null) {
   return path && configured
-    ? `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/institution-public-media/${path}`
+    ? `/api/media?path=${encodeURIComponent(path)}`
     : null;
 }
 export async function institutions(p: Params = {}, limit = 12) {
@@ -89,7 +94,9 @@ export async function institutions(p: Params = {}, limit = 12) {
     })
     .range((page - 1) * limit, page * limit - 1);
   if (error)
-    throw new Error("University listings could not be loaded. Please try again.");
+    throw new Error(
+      "University listings could not be loaded. Please try again.",
+    );
   return { rows: data as Institution[], count: count || 0, unavailable: false };
 }
 export async function institution(slug: string) {

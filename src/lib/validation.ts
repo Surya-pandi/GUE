@@ -41,6 +41,7 @@ export const meetingHosts = [
 export const tourHosts = [
   "www.google.com",
   "maps.google.com",
+  "maps.app.goo.gl",
   "www.youtube.com",
   "youtu.be",
   "my.matterport.com",

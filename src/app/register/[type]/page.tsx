@@ -88,6 +88,7 @@ export default async function Register({
               <Field
                 label="Designation"
                 name="representative_designation"
+                placeholder="e.g. Admissions and Counselling Coordinator"
                 required
               />
               <Field label="Website (HTTPS)" name="website_url" type="url" />
@@ -96,8 +97,8 @@ export default async function Register({
               <Field label="State" name="state" required />
             </div>
             <p className="form-note">
-              You can upload supporting documents securely from your dashboard
-              after submitting.
+              After submitting, complete your university profile, select
+              courses, and add campus photos.
             </p>
           </ActionForm>
         ) : (

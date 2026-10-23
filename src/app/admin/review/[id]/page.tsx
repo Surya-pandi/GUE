@@ -1,10 +1,8 @@
+import { courseFeeSummary } from "@/lib/course-fees";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { requireUser } from "@/lib/auth";
-import { PageTitle, Field, Select, Textarea } from "@/components/ui";
-import { ActionForm } from "@/components/action-form";
-import { manageAction } from "@/app/actions";
-import { approveAssetAction } from "./review-action";
+import { PageTitle } from "@/components/ui";
 import { AdminListingControl } from "@/components/admin-listing-control";
 import { AdminDeleteControl } from "@/components/admin-delete-control";
 export default async function Review({
@@ -39,7 +37,7 @@ export default async function Review({
   );
   return (
     <div className="container page-content">
-      <PageTitle eyebrow="ADMINISTRATOR REVIEW" title={i.name} />
+      <PageTitle eyebrow="UNIVERSITY DETAILS" title={i.name} />
       <div className="prose">
         <p>
           {i.institution_type} · {i.city}, {i.state}
@@ -75,37 +73,30 @@ export default async function Review({
           (c: {
             id: string;
             name: string;
+            degree_type: string;
             eligibility: string;
             published_fee_amount: number | null;
           }) => (
             <div className="record" key={c.id}>
-              <h3>{c.name}</h3>
+              <h3>
+                {c.degree_type ? `${c.degree_type} - ` : ""}
+                {c.name}
+              </h3>
               <p>{c.eligibility}</p>
-              <p>Fee: {c.published_fee_amount ?? "Not supplied"}</p>
+              <p>Fee: {courseFeeSummary(c)}</p>
             </div>
           ),
         )}
-        <h2>Photographs awaiting review</h2>
+        <h2>Gallery photographs</h2>
+        <p>
+          Photos are available automatically when the university is published.
+        </p>
         {previews.map((m) => (
           <div className="record" key={m.id}>
             {m.url && (
               <img src={m.url} alt={m.alt_text} style={{ maxHeight: 280 }} />
             )}
             <p>{m.alt_text}</p>
-            <ActionForm
-              action={approveAssetAction}
-              submit={
-                m.is_published ? "Already approved" : "Approve for public use"
-              }
-              disabled={m.is_published}
-            >
-              <input type="hidden" name="id" value={m.id} />
-              <input type="hidden" name="kind" value="media" />
-              <label className="check">
-                <input type="checkbox" name="cover" />
-                Use as cover photograph
-              </label>
-            </ActionForm>
           </div>
         ))}
         <h2>Virtual tours</h2>
@@ -120,48 +111,13 @@ export default async function Review({
               <p>
                 {t.title}: {t.tour_url}
               </p>
-              <ActionForm
-                action={approveAssetAction}
-                submit="Approve tour"
-                disabled={t.is_published}
-              >
-                <input type="hidden" name="id" value={t.id} />
-                <input type="hidden" name="kind" value="tour" />
-              </ActionForm>
             </div>
           ),
         )}
-        <h2>Institution decision</h2>
-        {i.removed_at && (
-          <p className="alert">
-            This university has been removed. Restore it before recording a new
-            verification decision.
-          </p>
-        )}
-        <ActionForm
-          action={manageAction}
-          submit="Record verification decision"
-          disabled={Boolean(i.removed_at)}
-        >
-          <input type="hidden" name="operation" value="verify" />
-          <input type="hidden" name="institution_id" value={i.id} />
-          <Select
-            label="Decision"
-            name="status"
-            options={["pending", "approved", "rejected", "suspended"]}
-            defaultValue={i.verification_status}
-          />
-          <Textarea
-            label="Review notes shared with institution"
-            name="notes"
-            defaultValue={i.institution_reviews?.notes || ""}
-          />
-          <Field
-            label="Verified accreditation"
-            name="accreditation"
-            defaultValue={i.accreditation}
-          />
-        </ActionForm>
+        <p>
+          Universities publish automatically after completing setup. No approval
+          decision is required.
+        </p>
         <AdminListingControl
           id={i.id}
           name={i.name}
