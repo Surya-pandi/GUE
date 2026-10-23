@@ -52,6 +52,9 @@ for (const path of pages) {
         "Header offers account type selection",
       );
       assert.ok(html.includes("Big dreams."), "Public landing hero");
+      for (const stream of ["Commerce", "Pharmacy", "Other"]) {
+        assert.ok(html.includes(`<h3>${stream}</h3>`), `Expanded stream renders: ${stream}`);
+      }
       assert.ok(html.includes('id="how-it-works"'), "Public landing sections");
       assert.ok(
         !html.includes("Log in to explore universities"),

@@ -166,18 +166,18 @@ export default async function Home() {
         </div>
         <div className="streams-grid">
           {streams.map((stream, i) => {
-            const Icon = icons[i];
+            const Icon = icons[i] ?? Compass;
             return (
               <Link
                 href={`/universities?stream=${encodeURIComponent(stream)}`}
                 className="stream"
                 key={stream}
               >
-                <span className={`stream-icon color-${i}`}>
+                <span className={`stream-icon color-${i % icons.length}`}>
                   <Icon size={25} strokeWidth={1.5} />
                 </span>
                 <h3>{stream}</h3>
-                <p>{descriptions[i]}</p>
+                <p>{descriptions[i] ?? `Explore ${stream.toLowerCase()} programmes`}</p>
                 <ArrowUpRight className="stream-arrow" size={16} />
               </Link>
             );
