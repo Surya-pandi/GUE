@@ -72,6 +72,7 @@ type Booking = {
 const menus = {
   student: [
     ["", "Overview", LayoutDashboard],
+    ["/universities", "Explore universities", BookOpen],
     ["saved", "Saved universities", Heart],
     ["counselling", "Counselling bookings", Video],
     ["visits", "Campus visits", CalendarDays],
@@ -1539,7 +1540,7 @@ export async function Dashboard({
           return (
             <Link
               className={section === path ? "active" : ""}
-              href={`${base}${path ? "/" + path : ""}${instId ? "?institution=" + instId : ""}`}
+              href={String(path).startsWith("/") ? String(path) : `${base}${path ? "/" + path : ""}${instId ? "?institution=" + instId : ""}`}
               key={String(path)}
               aria-current={section === path ? "page" : undefined}
             >
@@ -1548,12 +1549,6 @@ export async function Dashboard({
             </Link>
           );
         })}
-        {role === "student" && (
-          <Link href="/universities">
-            <CompassIcon />
-            Explore universities
-          </Link>
-        )}
         {role !== "admin" && (
           <Link href="/compare">
             <GitCompareArrows size={16} />
@@ -1726,7 +1721,4 @@ async function AdminCleanup() {
       />
     </div>
   );
-}
-function CompassIcon() {
-  return <BookOpen size={16} />;
 }
