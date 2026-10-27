@@ -3939,3 +3939,63 @@ tr:last-child td {
 .photo-category-section { margin: 28px 0; }
 .photo-category-section h3 { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; }
 .photo-category-count { font-size: 13px; font-weight: 400; color: #526581; }
+
+/* Student and university workspaces */
+.portal-workspace { grid-template-columns: 238px minmax(0, 1fr); gap: 32px; }
+.portal-workspace .dashboard-nav { align-self: start; background: #f5f8fc; border: 1px solid #e3eaf2; border-radius: 22px; padding: 18px 12px; }
+.workspace-identity { display: flex; gap: 10px; align-items: center; padding: 8px 8px 20px; border-bottom: 1px solid #e0e7ef; margin-bottom: 20px; }
+.workspace-identity > span { display: grid; place-items: center; background: #173e4a; color: #e5edb3; width: 42px; height: 42px; border-radius: 14px; flex-shrink: 0; }
+.workspace-identity strong, .workspace-identity small { display: block; }
+.workspace-identity strong { color: #173347; font-size: 14px; }
+.workspace-identity small { color: #5a6b80; font-size: 11px; margin-top: 4px; }
+.portal-workspace .dashboard-nav .eyebrow { padding-left: 10px; font-size: 9px; }
+.portal-workspace .dashboard-nav a { min-height: 46px; border-radius: 12px; font-size: 13px; padding: 12px; }
+.portal-workspace .dashboard-nav a.active { background: #173e4a; color: white; box-shadow: 0 5px 12px #173e4a16; }
+.portal-workspace .dashboard-nav a svg { flex-shrink: 0; }
+.portal-workspace .page-title { padding-bottom: 24px; }
+.portal-workspace .page-title h1 { letter-spacing: -.035em; font-size: clamp(27px, 3vw, 36px); }
+.workspace-welcome { display: grid; grid-template-columns: minmax(0, 1fr) 210px; align-items: center; gap: 28px; padding: 32px; background: #edf3e7; border: 1px solid #dce6d5; border-radius: 24px; margin-bottom: 24px; }
+.workspace-kicker { color: #3f6558; font-size: 10px; font-weight: 700; letter-spacing: .16em; }
+.portal-workspace .workspace-welcome h2 { font-size: clamp(24px, 2.6vw, 33px); line-height: 1.18; letter-spacing: -.035em; margin: 14px 0; color: #163b39; max-width: 530px; }
+.workspace-welcome p { color: #48645e; font-size: 14px; line-height: 1.7; }
+.workspace-welcome .button { background: #183f3d; border-radius: 12px; margin-top: 10px; }
+.workspace-welcome-note { padding: 24px; background: #ffffff90; border-radius: 18px; color: #31594e; }
+.workspace-welcome-note strong { display: block; font-size: 15px; margin-top: 18px; }
+.workspace-welcome-note p { font-size: 12px; margin-bottom: 0; }
+.portal-workspace .metrics { gap: 16px; margin: 24px 0; }
+.portal-workspace .metric { border-radius: 18px; background: white; padding: 22px; border: 1px solid #dfe7ef; }
+.workspace-metric { transition: border-color .15s, box-shadow .15s; }
+.workspace-metric:hover { border-color: #7e9caf; box-shadow: 0 8px 24px #183d4d0d; }
+.portal-workspace .workspace-metric-top { display: flex; justify-content: space-between; color: #466a80; margin: 0 0 18px; }
+.portal-workspace .metric strong { font-size: 36px; font-weight: 650; letter-spacing: -.04em; }
+.portal-workspace .metric > span:not(.workspace-metric-top) { font-size: 13px; }
+.workspace-metric small { display: block; margin-top: 14px; font-size: 11px; color: #4a6278; }
+.workspace-shortcuts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin: 26px 0 34px; }
+.workspace-shortcuts a { display: grid; position: relative; gap: 9px; border: 1px solid #e2e9f1; background: #f8fafd; border-radius: 16px; padding: 22px; color: #25445c; }
+.workspace-shortcuts a:hover { background: #edf3fa; }
+.workspace-shortcuts strong { font-size: 14px; margin-top: 5px; }
+.workspace-shortcuts span { font-size: 12px; line-height: 1.6; color: #586c80; }
+.shortcut-arrow { position: absolute; top: 22px; right: 18px; }
+.portal-workspace .record, .portal-workspace .form-card { border-radius: 18px; border-color: #e1e8f0; box-shadow: 0 4px 20px #18384a04; }
+.portal-workspace .record { padding: 24px; }
+.portal-workspace a:focus-visible { outline: 3px solid #275cd5; outline-offset: 4px; }
+@media (max-width: 1100px) {
+  .portal-workspace { grid-template-columns: 205px minmax(0, 1fr); gap: 22px; }
+  .workspace-welcome { grid-template-columns: 1fr; }
+  .workspace-welcome-note { display: none; }
+}
+@media (max-width: 760px) {
+  .portal-workspace { display: block; }
+  .portal-workspace .dashboard-nav { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px; overflow: visible; padding: 12px; margin-bottom: 28px; }
+  .workspace-identity { grid-column: 1 / -1; margin-bottom: 7px; padding-bottom: 14px; }
+  .portal-workspace .dashboard-nav .eyebrow { display: none; }
+  .portal-workspace .dashboard-nav a { white-space: normal; margin: 0; font-size: 12px; min-height: 46px; }
+  .workspace-welcome { padding: 24px; border-radius: 19px; }
+  .portal-workspace .metrics { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+  .portal-workspace .metric { padding: 14px 10px; border-radius: 14px; }
+  .portal-workspace .metric strong { font-size: 29px; }
+  .portal-workspace .metric > span:not(.workspace-metric-top) { font-size: 11px; }
+  .workspace-shortcuts { grid-template-columns: 1fr; gap: 10px; }
+  .workspace-shortcuts a { padding: 20px; }
+}
+@media (prefers-reduced-motion: reduce) { .workspace-metric { transition: none; } }

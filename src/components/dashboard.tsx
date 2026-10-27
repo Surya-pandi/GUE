@@ -315,6 +315,25 @@ export async function Dashboard({
     check(error);
     content = (
       <>
+        {role !== "admin" && (
+          <section className="workspace-welcome" aria-label="Your next step">
+            <div>
+              <span className="workspace-kicker">{role === "student" ? "MAKE YOUR NEXT MOVE" : "YOUR ADMISSIONS WORKSPACE"}</span>
+              <h2>{role === "student" ? "Your future starts with a little discovery." : "Great conversations start here."}</h2>
+              <p>{role === "student"
+                ? "Find universities you love, compare your options, and connect with an admissions team."
+                : "Keep your university profile fresh and make time for your next students."}</p>
+              <Link className="button" href={role === "student" ? "/universities" : `${base}/schedule?institution=${instId}`}>
+                {role === "student" ? "Explore universities" : "Manage availability"} <ArrowUpRight size={18} />
+              </Link>
+            </div>
+            <div className="workspace-welcome-note">
+              {role === "student" ? <BookOpen size={32} /> : <CalendarDays size={32} />}
+              <strong>{role === "student" ? "One step at a time" : "Make room to connect"}</strong>
+              <p>{role === "student" ? "Save your favourites. Ask your questions. Find your fit." : "Published counselling slots can be booked automatically by students."}</p>
+            </div>
+          </section>
+        )}
         {role === "admin" && (
           <div className="admin-overview-banner">
             <div>
@@ -342,18 +361,43 @@ export async function Dashboard({
             <Status value={institution.verification_status} />
             <p>
               {institution.verification_notes ||
-                "Complete setup to publish your university automatically."}
+                (institution.verification_status === "approved"
+                  ? "Your university is published. Keep your courses, photos, and availability up to date."
+                  : "Complete setup to publish your university automatically.")}
             </p>
           </div>
         )}
         <div className="metrics">
-          {counts.map((c) => (
+          {counts.map((c, index) => role !== "admin" ? (
+            <Link key={c.label} className="metric workspace-metric"
+              href={`${base}/${[role === "student" ? "saved" : "courses", "counselling", "visits"][index]}${role === "institution" ? `?institution=${instId}` : ""}`}>
+              <span className="workspace-metric-top">{[<BookOpen key="courses" size={19} />, <Video key="video" size={19} />, <CalendarDays key="visits" size={19} />][index]}<ArrowUpRight size={16} /></span>
+              <strong>{c.value}</strong>
+              <span>{c.label}</span>
+              <small>View details</small>
+            </Link>
+          ) : (
             <div key={c.label} className="metric">
               <strong>{c.value}</strong>
               <span>{c.label}</span>
             </div>
           ))}
         </div>
+        {role !== "admin" && (
+          <section className="workspace-shortcuts" aria-label="Quick actions">
+            {(role === "student" ? [
+              { title: "Compare your shortlist", text: "See your options side by side.", href: "/compare", icon: GitCompareArrows },
+              { title: "Build your profile", text: "Keep your details up to date.", href: `${base}/profile`, icon: UserRound },
+              { title: "Stay in the loop", text: "Read your booking and account updates.", href: `${base}/notifications`, icon: Bell },
+            ] : [
+              { title: "University profile", text: "Help students get to know you.", href: `${base}/profile?institution=${instId}`, icon: Building2 },
+              { title: "Courses & fees", text: "Keep your programmes and fees current.", href: `${base}/courses?institution=${instId}`, icon: BookOpen },
+              { title: "Campus gallery", text: "Bring your campus story to life.", href: `${base}/gallery?institution=${instId}`, icon: Image },
+            ]).map(({ title, text, href, icon: Icon }) => (
+              <Link href={href} key={title}><Icon size={21} /><strong>{title}</strong><span>{text}</span><ArrowUpRight className="shortcut-arrow" size={17} /></Link>
+            ))}
+          </section>
+        )}
         {role === "admin" && (
           <div className="admin-shortcuts">
             <Link href={`${base}/institutions`}>
@@ -390,7 +434,7 @@ export async function Dashboard({
               <p>
                 <LocalTime value={b.starts_at} />
               </p>
-              <Link className="text-link" href={`${base}/counselling`}>
+              <Link className="text-link" href={`${base}/counselling${role === "institution" ? `?institution=${instId}` : ""}`}>
                 View booking →
               </Link>
             </div>
@@ -407,7 +451,7 @@ export async function Dashboard({
           href={
             role === "student"
               ? "/universities"
-              : `${base}/${role === "admin" ? "applications" : "schedule"}`
+              : `${base}/${role === "admin" ? "applications" : `schedule?institution=${instId}`}`
           }
         >
           {role === "student"
@@ -786,6 +830,13 @@ export async function Dashboard({
                   <p>
                     <strong>Institution response:</strong>{" "}
                     {b.institution_response}
+                  </p>
+                )}
+                {kind === "counselling" && b.status === "confirmed" && !meeting && (
+                  <p className="form-note">
+                    {role === "student"
+                      ? "Your time is confirmed. The university will add your video meeting link here before the session."
+                      : "This time is booked. Use Manage request to add the video meeting link and update the booking with the confirmed action."}
                   </p>
                 )}
                 {meeting && (
@@ -1517,9 +1568,15 @@ export async function Dashboard({
     );
   return (
     <div
-      className={`container dashboard ${role === "admin" ? "admin-workspace" : ""}`}
+      className={`container dashboard ${role === "admin" ? "admin-workspace" : "portal-workspace"}`}
     >
       <aside className="dashboard-nav">
+        {role !== "admin" && (
+          <div className="workspace-identity">
+            <span>{role === "student" ? <UserRound size={22} /> : <Building2 size={22} />}</span>
+            <div><strong>{role === "student" ? "Student space" : "University space"}</strong><small>Your next chapter, organised.</small></div>
+          </div>
+        )}
         {role === "admin" && (
           <div className="admin-nav-brand">
             <ShieldCheck size={27} />

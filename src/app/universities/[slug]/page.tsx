@@ -248,7 +248,8 @@ export default async function University({
             </Link>
           )}
           <p className="form-note">
-            Bookings are subject to availability and institution confirmation.
+            Counselling is scheduled automatically from available slots. Campus
+            visits require university confirmation.
           </p>
         </aside>
       </div>

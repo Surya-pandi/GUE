@@ -37,6 +37,7 @@ test("migrations enforce privacy, role protection, booking workflows, and report
     "019_automatic_gallery_photos.sql",
     "020_google_maps_short_links.sql",
     "021_automatic_university_publication.sql",
+    "022_automatic_counselling.sql",
   ]) {
     if (file === "009_university_terminology.sql") {
       await db.exec(`
@@ -336,6 +337,40 @@ test("migrations enforce privacy, role protection, booking workflows, and report
     );
   });
   await asUser(student);
+  await t.test("automatic counselling selects free slots, confirms, and rejects unavailable dates", async () => {
+    await db.exec("begin");
+    try {
+      await asUser(owner);
+      for (const hour of [10, 11]) {
+        await rpc("manage_record", ["slot", {
+          institution_id: institution, kind: "counselling",
+          starts_at: `2035-02-01T${hour}:00:00Z`,
+          ends_at: `2035-02-01T${hour}:30:00Z`,
+        }]);
+      }
+      await asUser(student);
+      const first = await rpc("auto_book_counselling", [institution, "2035-02-01", "Course advice"]);
+      const result = await db.query<{ status: string; hour: number }>(
+        "select status, extract(hour from starts_at at time zone 'UTC')::int as hour from public.counselling_bookings where id=$1", [first.rows[0].result]);
+      assert.equal(result.rows[0].status, "confirmed");
+      assert.equal(result.rows[0].hour, 10);
+      await asUser(other);
+      const second = await rpc("auto_book_counselling", [institution, "2035-02-01", ""]);
+      const next = await db.query<{ hour: number }>(
+        "select extract(hour from starts_at at time zone 'UTC')::int as hour from public.counselling_bookings where id=$1", [second.rows[0].result]);
+      assert.equal(next.rows[0].hour, 11);
+      await db.exec("savepoint unavailable");
+      await assert.rejects(rpc("auto_book_counselling", [institution, "2035-02-01", ""]), /No free counselling slots/);
+      await db.exec("rollback to savepoint unavailable");
+      await asUser(owner);
+      await db.exec("savepoint forbidden");
+      await assert.rejects(rpc("auto_book_counselling", [institution, "2035-02-01", ""]), /student account/);
+      await db.exec("rollback to savepoint forbidden");
+    } finally {
+      await db.exec("rollback");
+      await asUser(student);
+    }
+  });
   const { rows: booked } = await rpc("book_slot", [
     "counselling",
     slot,

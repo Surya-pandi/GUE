@@ -5,7 +5,7 @@ import { institution, Params, scalar } from "@/lib/data";
 import { ActionForm } from "@/components/action-form";
 import { Field, Textarea, Empty } from "@/components/ui";
 import { LocalTime } from "@/components/interactive";
-import { bookAction } from "@/app/actions";
+import { autoCounsellingAction, bookAction } from "@/app/actions";
 export const metadata = { title: "Book a conversation or campus visit" };
 export default async function Book({
   params,
@@ -38,10 +38,23 @@ export default async function Book({
             : "Let’s start a conversation."}
         </h1>
         <p>
-          Choose a time and send your request. Times are shown in your browser’s
-          time zone. Availability is checked again when you submit.
+          {kind === "visit"
+            ? "Choose a time and send your request. Times are shown in your browser’s time zone. Availability is checked again when you submit."
+            : "Choose a date in India Standard Time (IST). We will automatically confirm the earliest free university slot that does not overlap your other counselling sessions."}
         </p>
-        {slots?.length ? (
+        {kind === "counselling" ? (
+          <ActionForm action={autoCounsellingAction} submit="Find a free slot & book">
+            <input type="hidden" name="institution" value={c.id} />
+            <Field label="Preferred date (IST)" name="date" type="date" required />
+            <Textarea label="What would you like to ask? (optional)" name="notes" />
+            <p className="form-note">
+              Submitting reserves a time immediately. Your confirmed time appears in
+              your counselling dashboard. The university will add the video meeting
+              link there. If no slot is free, you can choose another date.
+            </p>
+            <Link className="text-link" href="/student/dashboard/counselling">View my counselling bookings</Link>
+          </ActionForm>
+        ) : slots?.length ? (
           <ActionForm action={bookAction} submit="Request booking">
             <input type="hidden" name="kind" value={kind} />
             <fieldset>

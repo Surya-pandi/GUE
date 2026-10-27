@@ -466,6 +466,27 @@ export async function finishUniversitySetupAction(
   redirect(`/institution/dashboard?institution=${institution}&setup=complete`);
 }
 
+export async function autoCounsellingAction(
+  _: ActionState,
+  f: FormData,
+): Promise<ActionState> {
+  const { supabase } = await requireUser(["student"]);
+  try {
+    const institution = uuid.parse(text(f, "institution"));
+    const date = z.iso.date().parse(text(f, "date"));
+    const notes = z.string().max(2000).parse(text(f, "notes"));
+    const { error } = await supabase.rpc("auto_book_counselling", {
+      institution, requested_date: date, notes,
+    });
+    check(error);
+    revalidatePath("/student/dashboard", "layout");
+    revalidatePath("/institution/dashboard", "layout");
+  } catch (e) {
+    return failure(e);
+  }
+  redirect("/student/dashboard/counselling");
+}
+
 export async function bookAction(
   _: ActionState,
   f: FormData,
